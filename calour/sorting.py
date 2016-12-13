@@ -73,7 +73,7 @@ def _transform(data, axis=1, min_abundance=None, logit=1, normalize=True):
 
     return new
 
-@Experiment._record_sig
+# @Experiment._record_sig
 def cluster_data(exp, axis=0, transform=None, metric='euclidean', inplace=False, **kwargs):
     '''Cluster the samples/features.
 
@@ -92,7 +92,11 @@ def cluster_data(exp, axis=0, transform=None, metric='euclidean', inplace=False,
         With features filtered (if min_abundance is not None) and clsutered (reordered)
 
     '''
-    data = transform(exp.data, axis=axis, **kwargs)
+    if transform is not None:
+        data = transform(exp.data, axis=axis, **kwargs)
+    else:
+        data = exp.get_data(sparse=False, getcopy=True).transpose()
+        # data = data.scale()
 
     # cluster
     dist_mat = spatial.distance.pdist(data, metric=metric)

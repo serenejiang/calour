@@ -49,6 +49,9 @@ class PlotGUI:
             fig = plt.gcf()
         return fig
 
+    def run_gui(self):
+        pass
+
     def connect_functions(self, fig):
         '''Connect to the matplotlib callbacks for key and mouse '''
         self.canvas = fig.canvas

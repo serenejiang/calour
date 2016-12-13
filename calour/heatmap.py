@@ -158,3 +158,4 @@ def plot(exp, sample_field=None, feature_field=None, max_features=1000,
     hdat.connect_functions(fig)
 
     plt.show()
+    hdat.run_gui()
