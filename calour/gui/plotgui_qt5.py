@@ -35,7 +35,7 @@ class PlotGUI_QT5(PlotGUI):
         if app_created:
             app.references = set()
 
-        self.aw = ApplicationWindow(self.exp)
+        self.aw = ApplicationWindow(self)
         # if app_created:
         #     app.references.add(self.aw)
         app.references.add(self.aw)
@@ -96,7 +96,7 @@ class MyMplCanvas(FigureCanvas):
 
 
 class ApplicationWindow(QMainWindow):
-    def __init__(self, exp):
+    def __init__(self, gui):
         QMainWindow.__init__(self)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.setWindowTitle("application main window")
@@ -156,7 +156,7 @@ class ApplicationWindow(QMainWindow):
 
         # fill the values for the gui
         # add the sample field combobox values
-        for cfield in exp.sample_metadata.columns:
+        for cfield in gui.exp.sample_metadata.columns:
             self.w_field.addItem(cfield)
 
         heatmap.setFocusPolicy(QtCore.Qt.ClickFocus)
@@ -164,6 +164,11 @@ class ApplicationWindow(QMainWindow):
 
         self.plotaxes = heatmap.axes
         self.plotfigure = heatmap.figure
+        self.gui = gui
+
+        # link events to gui
+        self.w_annotate.clicked.connect(self.annotate)
+
 
         self.main_widget.setFocus()
         self.setCentralWidget(self.main_widget)
@@ -173,3 +178,10 @@ class ApplicationWindow(QMainWindow):
 
     def closeEvent(self, ce):
         self.fileQuit()
+
+    def annotate(self):
+        '''Add database annotation to selected features
+        '''
+        from calour.annotation import DBAnnotateSave
+        x=DBAnnotateSave(self.gui.exp, list(self.gui.selected_features.keys()))
+        x.exec_()
