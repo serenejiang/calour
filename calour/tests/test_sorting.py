@@ -32,13 +32,14 @@ class TestSorting(Tests):
     def test_cluster_data(self):
         # no minimal filtering
         # simple experiment
-        self.simple.sort_taxonomy(inplace=True)
-        obs = self.simple.cluster_data()
+        sexp = self.simple.sort_taxonomy()
+        obs = sexp.cluster_data()
         exp = ca.read(join(self.test_data_dir, 'test1.clustered2.features.biom'), join(self.test_data_dir, 'test1.map.txt'))
         assert_experiment_equal(obs, exp, check_history=False, almost_equal=True)
         # complex experiment (timeseries)
-        obs = self.complex.cluster_data()
-        exp = ca.read(join(self.test_data_dir, 'timeseries.clustered.features.biom'), join(self.test_data_dir, 'timeseries.map.txt'))
+        sexp = self.complex.sort_taxonomy()
+        obs = sexp.cluster_data()
+        exp = ca.read(join(self.test_data_dir, 'timeseries.clustered2.features.biom'), join(self.test_data_dir, 'timeseries.map.txt'))
         assert_experiment_equal(obs, exp, check_history=False, almost_equal=True)
 
     def test_sort_by_metadata(self):

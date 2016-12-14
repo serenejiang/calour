@@ -182,6 +182,5 @@ class ApplicationWindow(QMainWindow):
     def annotate(self):
         '''Add database annotation to selected features
         '''
-        from calour.annotation import DBAnnotateSave
-        x=DBAnnotateSave(self.gui.exp, list(self.gui.selected_features.keys()))
-        x.exec_()
+        from calour.annotation import annotate_bacteria_gui
+        annotate_bacteria_gui(list(self.gui.selected_features.keys()), self.gui.exp)
