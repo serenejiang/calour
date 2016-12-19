@@ -122,10 +122,10 @@ def _filter_by_data(data, predicate, axis=0, negate=False, **kwargs):
         select = np.ones(n, dtype=bool)
         if axis == 0:
             for row in range(n):
-                select[row] = predicate(data[row, :], **kwargs)
+                select[row] = predicate(data[row, :].todense().A1, **kwargs)
         elif axis == 1:
             for col in range(n):
-                select[col] = predicate(data[:, col], **kwargs)
+                select[col] = predicate(data[:, col].todense().A1, **kwargs)
     else:
         select = np.apply_along_axis(predicate, 1 - axis, data, **kwargs)
 
@@ -171,7 +171,7 @@ def _mean_abundance(x, cutoff=0.01):
     return x.mean() >= cutoff
 
 
-def _prevalence(x, cutoff=0, fraction=0.5):
+def _prevalence(x, cutoff=1/10000, fraction=0.5):
     '''Check the prevalence of values above the cutoff.
 
     present (abundance >= cutoff) in at least "fraction" of samples
@@ -186,7 +186,7 @@ def _prevalence(x, cutoff=0, fraction=0.5):
     False
     '''
     logger.debug('')
-    frac = np.sum(i >= cutoff for i in x) / len(x)
+    frac = np.sum(x >= cutoff) / len(x)
     return frac >= fraction
 
 

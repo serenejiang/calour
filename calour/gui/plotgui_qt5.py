@@ -58,7 +58,7 @@ class PlotGUI_QT5(PlotGUI):
         self.aw.w_field_val.setText(str(self.exp.sample_metadata[csample_field][self.last_select_sample]))
 
         self.aw.w_dblist.clear()
-        info = self.bactdb.getannotationstrings(sequence)
+        info = self.bactdb.get_annotation_strings(sequence)
         self.addtocdblist(info)
 
     def addtocdblist(self, info):

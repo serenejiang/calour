@@ -53,12 +53,15 @@ class Experiment:
         The metadata on the samples
     feature_metadata : ``pandas.DataFrame``
         The metadata on the features
+    exp_metadata : dict
+        metadata about the experiment (data md5, filenames, etc.)
     '''
     def __init__(self, data, sample_metadata, feature_metadata=None,
-                 description='', sparse=True):
+                 exp_metadata={}, description='', sparse=True):
         self.data = data
         self.sample_metadata = sample_metadata
         self.feature_metadata = feature_metadata
+        self.exp_metadata = exp_metadata
         self.description = description
 
         # the function calling history list

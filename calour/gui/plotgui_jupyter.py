@@ -50,7 +50,7 @@ class PlotGUI_Jupyter(PlotGUI):
         self.labtax.value = 'Feature: %s' % taxname
         self.labsamp.value = 'Sample: %s' % sampname
         self.labreads.value = 'Reads:{:.01f}'.format(self.exp.get_data()[self.last_select_sample, self.last_select_feature])
-        info = self.bactdb.getannotationstrings(sequence)
+        info = self.bactdb.get_annotation_strings(sequence)
         idata = ''
         for cinfo in info:
             cstr = cinfo[1]
