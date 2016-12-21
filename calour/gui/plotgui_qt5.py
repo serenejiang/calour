@@ -183,4 +183,10 @@ class ApplicationWindow(QMainWindow):
         '''Add database annotation to selected features
         '''
         from calour.annotation import annotate_bacteria_gui
-        annotate_bacteria_gui(list(self.gui.selected_features.keys()), self.gui.exp)
+
+        # get the sequences of the selection
+        seqs = []
+        for cseqpos in self.gui.selected_features.keys():
+            seqs.append(self.gui.exp.feature_metadata.index[cseqpos])
+
+        annotate_bacteria_gui(seqs, self.gui.exp)

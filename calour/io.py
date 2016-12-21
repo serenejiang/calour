@@ -66,9 +66,10 @@ def _get_md_from_biom(table):
         logger.info('No metadata associated with features in biom table')
     else:
         metadata = [dict(tmd) for tmd in metadata]
-    md_df = pd.DataFrame(metadata, index=ids)
-    # md_df['sequence']=ids
-    md_df.index.name = 'sequence'
+    md_df = pd.DataFrame(metadata)
+    md_df['ids']=ids
+    md_df.set_index('ids', drop=False, inplace=True)
+    # md_df.index.name = 'sequence'
     return md_df
 
 
@@ -79,7 +80,9 @@ def _read_table(f):
     metadata file
 
     '''
-    table = pd.read_table(f, sep='\t', index_col=0)
+    # table = pd.read_table(f, sep='\t', index_col=0)
+    table = pd.read_table(f, sep='\t')
+    table.set_index(table.columns[0], drop=False, inplace=True)
     # make sure the sample ID is string-type
     table.index = table.index.astype(np.str)
     return table

@@ -193,7 +193,7 @@ class BactDB:
         data : list of tuples (Type:Value)
             a list of tuples of (Type,Value) to add to Data table (i.e. ("PUBMEDID","322455") etc)
         studyid : list of int
-            the ids in which this study appears (from finddataid)
+            the ids in which this study appears (from find_study_id)
 
         output:
         suid : int
@@ -218,3 +218,66 @@ class BactDB:
         else:
             logger.debug('error adding experiment. msg: %s' % res.content)
             return None
+
+    def add_annotations(self, expid, sequences, annotationtype, annotations, submittername='NA', description='', method='', primerid=0, agenttype='HeatSequer', private='n'):
+        """
+        Add a new manual curation to the database
+
+        Paramerers
+        ----------
+        db : scdbstruct
+            from dbstart()
+        expid : int
+            the value of ExpID from Experiments table
+        sequences : list of ACGT
+            the sequences to curate
+        annotationtype : str
+            the curation type (COMMON,DIFFEXP,CONTAM,HIGHFREQ,PATHOGEN)
+        annotations : list of Type,Value
+            The curations to add to the CurationList table (Type,Value)
+        submittername : str
+            Name of the submitter (first,last) or NA
+        description : str
+            text description of the curation entry (i.e. "lower in whole wheat pita bread")
+        method : str
+            text description of how the curation was detected - only if needed
+        primerid : int
+            the PrimerID from Primers table of the sequences (usually 1 - the V4 515F,806R)
+        agenttype : str
+            the program submitting the curation
+        private : str (optional)
+            'n' (default) or 'y'
+
+        Returns
+        -------
+        annotationid : int or None
+            the AnnotationID (in Annotations table) of the new annotation, or None if not added
+        """
+        logger.debug('addannotation - %d sequences' % len(sequences))
+        if len(sequences) == 0:
+            logger.warn('No sequences to annotate!')
+            return None
+        if len(annotations) == 0:
+            logger.warn('No annotations to add!')
+            return None
+
+        # add the annotation
+        rdata={}
+        rdata['expId']=expid
+        rdata['sequences']=sequences
+        rdata['region']=primerid
+        rdata['annotationType']=annotationtype
+        rdata['method']=method
+        rdata['agentType']=agenttype
+        rdata['description']=description
+        rdata['private']=private
+        rdata['annotationList']=annotations
+
+        res = requests.post(self.dburl+'/annotations/add', json=rdata)
+        if res.status_code == 200:
+            newid = res.json()['annotationId']
+            logger.debug('Finished adding experiment id %d annotationid %d' % (expid,newid))
+            return newid
+        logger.warn('problem adding annotations for experiment id %d' % expid)
+        logger.debug(res.content)
+        return None
