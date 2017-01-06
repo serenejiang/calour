@@ -110,6 +110,8 @@ def sort_by_metadata(exp, field, axis=0, inplace=False):
         x = exp.sample_metadata
     elif axis == 1:
         x = exp.feature_metadata
+    else:
+        raise ValueError('unknown axis %s' % axis)
     idx = np.argsort(x[field], kind='mergesort')
     return exp.reorder(idx, axis=axis, inplace=inplace)
 
