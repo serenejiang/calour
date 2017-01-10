@@ -8,7 +8,8 @@ logger = getLogger(__name__)
 class BactDB:
     def __init__(self):
         # Web address of the bact server
-        self.dburl = 'http://amnonim.webfactional.com/scdb_main'
+        # self.dburl = 'http://amnonim.webfactional.com/scdb_main'
+        self.dburl = 'http://amnonim.webfactional.com/scdb_develop'
 
     def get_seq_annotations(self, sequence):
         '''Get the annotations for a sequence
@@ -93,7 +94,7 @@ class BactDB:
             shortdesc.append((annotationdetails, cdesc))
         return shortdesc
 
-    def find_study_id(self,datamd5='',mapmd5='',getall=False):
+    def find_study_id(self, datamd5='', mapmd5='', getall=False):
         """
         find the data id for the data/map md5 (which are calculated on load)
         note the md5s don't change following filtering/normalization/etc... - only the original data
@@ -109,21 +110,21 @@ class BactDB:
         expids: int (if getall=False - default) or list of int (if getall=True)
             an id or a list of ids of matching dataID indices (or None if no match)
         """
-        logger.debug('findexpid for datamd5 %s mapmd5 %s' % (datamd5,mapmd5))
+        logger.debug('findexpid for datamd5 %s mapmd5 %s' % (datamd5, mapmd5))
         details = []
         if datamd5:
             details.append(['DataMD5', datamd5])
         if mapmd5:
             details.append(['MapMD5', mapmd5])
         if len(details) == 0:
-            logger.warn('Error. MapMD5 and DataMD5 both missing from finddataid')
+            logger.warn('Error. MapMD5 and DataMD5 both missing from find_study_id')
             return None
 
-        rdata={}
+        rdata = {}
         rdata['details'] = details
         res = requests.get(self.dburl+'/experiments/get_id', json=rdata)
         if res.status_code == 200:
-            expids=res.json()['expId']
+            expids = res.json()['expId']
             if not getall:
                 if len(expids) > 1:
                     logger.warn('Problem. Found %d matches for data' % len(expids))
@@ -157,7 +158,6 @@ class BactDB:
             return details
         return []
 
-
     def get_study_annotations(self, expid):
         """
         get the list of annotations for study studyid
@@ -178,15 +178,15 @@ class BactDB:
             logger.warn('error getting annotations for experiment %d' % expid)
             return []
         annotations = res.json()['annotations']
-        logger.debug('Found %d annotations for experiment %d' % (len(annotations),expid))
+        logger.debug('Found %d annotations for experiment %d' % (len(annotations), expid))
         # make it into a nice list of str
         info = []
         for cann in annotations:
-            cstr = 'date:%s description:%s user:%s private:%s' % (cann['date'],cann['description'],cann['userid'],cann['private'])
+            cstr = 'date:%s description:%s user:%s private:%s' % (cann['date'], cann['description'], cann['userid'], cann['private'])
             info.append(cstr)
         return info
 
-    def add_study_data(self,data,studyid=None):
+    def add_study_data(self, data, studyid=None):
         """
         add new data entries (for a new study)
         input:
@@ -210,7 +210,7 @@ class BactDB:
         rdata = {}
         rdata['expId'] = studyid
         rdata['details'] = data
-        res = requests.post(self.dburl+'/experiments/add_details',json=rdata)
+        res = requests.post(self.dburl+'/experiments/add_details', json=rdata)
         if res.status_code == 200:
             newid = res.json()['expId']
             logger.debug('experiment added. id is %d' % newid)
@@ -262,21 +262,21 @@ class BactDB:
             return None
 
         # add the annotation
-        rdata={}
-        rdata['expId']=expid
-        rdata['sequences']=sequences
-        rdata['region']=primerid
-        rdata['annotationType']=annotationtype
-        rdata['method']=method
-        rdata['agentType']=agenttype
-        rdata['description']=description
-        rdata['private']=private
-        rdata['annotationList']=annotations
+        rdata = {}
+        rdata['expId'] = expid
+        rdata['sequences'] = sequences
+        rdata['region'] = primerid
+        rdata['annotationType'] = annotationtype
+        rdata['method'] = method
+        rdata['agentType'] = agenttype
+        rdata['description'] = description
+        rdata['private'] = private
+        rdata['annotationList'] = annotations
 
         res = requests.post(self.dburl+'/annotations/add', json=rdata)
         if res.status_code == 200:
             newid = res.json()['annotationId']
-            logger.debug('Finished adding experiment id %d annotationid %d' % (expid,newid))
+            logger.debug('Finished adding experiment id %d annotationid %d' % (expid, newid))
             return newid
         logger.warn('problem adding annotations for experiment id %d' % expid)
         logger.debug(res.content)

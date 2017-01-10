@@ -227,10 +227,10 @@ def _freq_ratio(x, ratio=2):
     return max_1 / max_2 <= ratio
 
 
-def filter_samples(exp, field, values, negate=False, inplace=False, substring=False):
+def filter_samples(exp, field, values, negate=False, inplace=False):
     '''Shortcut for filtering samples.'''
     return filter_by_metadata(exp, field=field, values=values,
-                              negate=negate, inplace=inplace, substring=substring)
+                              negate=negate, inplace=inplace)
 
 
 def filter_taxonomy(exp, values, negate=False, inplace=False, substring=True):
