@@ -95,15 +95,15 @@ def get_file_md5(filename):
     flmd5: str
         the md5 of the file filename
     '''
-    fl=open(filename,'rU')
-    flmd5=hashlib.md5()
+    fl = open(filename, 'rU')
+    flmd5 = hashlib.md5()
     for cline in fl:
         try:
             flmd5.update(cline.encode('utf-8'))
         except:
             logger.warn('map md5 cannot be calculated - utf problems?')
             return ''
-    flmd5=flmd5.hexdigest()
+    flmd5 = flmd5.hexdigest()
     return flmd5
 
 
@@ -129,9 +129,11 @@ def get_data_md5(data):
         issparse = False
     for crow in range(data.shape[0]):
         if issparse:
-            cdat = data[crow,:].toarray()[0]
+            # if sparse need to convert to numpy array
+            cdat = data[crow, :].toarray()[0]
         else:
-            cdat = data[crow,:]
+            cdat = data[crow, :]
+        # convert to string of raw data since hashlib.md5 does not take numpy array as input
         datmd5.update(cdat.tostring())
 
     datmd5 = datmd5.hexdigest()
