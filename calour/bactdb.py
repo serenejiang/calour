@@ -57,7 +57,7 @@ class BactDB:
             annotationdetails = cann
             cdesc = ''
             if cann['description']:
-                cdesc += cann['description']+' ('
+                cdesc += cann['description'] + ' ('
             if cann['annotationtype'] == 'diffexp':
                 chigh = []
                 clow = []
@@ -74,13 +74,13 @@ class BactDB:
                         continue
                 cdesc += ' high in '
                 for cval in chigh:
-                    cdesc += cval+' '
+                    cdesc += cval + ' '
                 cdesc += ' compared to '
                 for cval in clow:
-                    cdesc += cval+' '
+                    cdesc += cval + ' '
                 cdesc += ' in '
                 for cval in call:
-                    cdesc += cval+' '
+                    cdesc += cval + ' '
             elif cann['annotationtype'] == 'isa':
                 cdesc += ' is a '
                 for cdet in cann['details']:
@@ -88,7 +88,7 @@ class BactDB:
             elif cann['annotationtype'] == 'contamination':
                 cdesc += 'contamination'
             else:
-                cdesc += cann['annotationtype']+' '
+                cdesc += cann['annotationtype'] + ' '
                 for cdet in cann['details']:
                     cdesc = cdesc + ' ' + cdet[1] + ','
             shortdesc.append((annotationdetails, cdesc))
@@ -125,7 +125,7 @@ class BactDB:
 
         rdata = {}
         rdata['details'] = details
-        res = requests.get(self.dburl+'/experiments/get_id', json=rdata)
+        res = requests.get(self.dburl + '/experiments/get_id', json=rdata)
         if res.status_code == 200:
             expids = res.json()['expId']
             if not getall:
@@ -157,7 +157,7 @@ class BactDB:
         logger.debug('get experiment details for expid %d' % expid)
         rdata = {}
         rdata['expId'] = expid
-        res = requests.get(self.dburl+'/experiments/get_details', json=rdata)
+        res = requests.get(self.dburl + '/experiments/get_details', json=rdata)
         if res.status_code == 200:
             details = res.json()['details']
             logger.debug('Found %d details for experiment %d' % (len(details), expid))
@@ -180,7 +180,7 @@ class BactDB:
         logger.debug('get experiment annotations for expid %d' % expid)
         rdata = {}
         rdata['expId'] = expid
-        res = requests.get(self.dburl+'/experiments/get_annotations', json=rdata)
+        res = requests.get(self.dburl + '/experiments/get_annotations', json=rdata)
         if res.status_code != 200:
             logger.warn('error getting annotations for experiment %d' % expid)
             return []
@@ -219,7 +219,7 @@ class BactDB:
         rdata = {}
         rdata['expId'] = studyid
         rdata['details'] = data
-        res = requests.post(self.dburl+'/experiments/add_details', json=rdata)
+        res = requests.post(self.dburl + '/experiments/add_details', json=rdata)
         if res.status_code == 200:
             newid = res.json()['expId']
             logger.debug('experiment added. id is %d' % newid)
@@ -290,7 +290,7 @@ class BactDB:
         rdata['private'] = private
         rdata['annotationList'] = annotations
 
-        res = requests.post(self.dburl+'/annotations/add', json=rdata)
+        res = requests.post(self.dburl + '/annotations/add', json=rdata)
         if res.status_code == 200:
             newid = res.json()['annotationId']
             logger.debug('Finished adding experiment id %d annotationid %d' % (expid, newid))
