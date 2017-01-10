@@ -77,7 +77,7 @@ def plot(exp, sample_field=None, feature_field=None, max_features=1000,
         Other string : name of child class of plotgui (which should reside in gui/lower(classname).py)
     axis : matplotlib axis or None (optional)
         None (default) to create a new figure, axis to plot heatmap into the axis
-    rect : list of int of None (optional)
+    rect : list of int or None (optional)
         None (default) to set initial zoom window to all experiment.
         [x_min, x_max, y_min, y_max] to set initial zoom window
     '''
