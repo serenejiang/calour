@@ -94,7 +94,7 @@ class BactDB:
             shortdesc.append((annotationdetails, cdesc))
         return shortdesc
 
-    def find_study_id(self, datamd5='', mapmd5='', getall=False):
+    def find_experiment_id(self, datamd5='', mapmd5='', getall=False):
         """
         find the data id for the data/map md5 (which are calculated on load)
         note the md5s don't change following filtering/normalization/etc... - only the original data
@@ -120,7 +120,7 @@ class BactDB:
         if mapmd5:
             details.append(['MapMD5', mapmd5])
         if not details:
-            logger.warn('Error. MapMD5 and DataMD5 both missing from find_study_id')
+            logger.warn('Error. MapMD5 and DataMD5 both missing from find_experiment_id')
             return None
 
         rdata = {}
@@ -131,26 +131,26 @@ class BactDB:
             if not getall:
                 if len(expids) > 1:
                     logger.warn('Problem. Found %d matches for data' % len(expids))
-                logger.debug('Found study id %d' % expids[0])
+                logger.debug('Found experiment id %d' % expids[0])
                 return expids[0]
             logger.debug("Found %d matches to data" % len(expids))
             return expids
         logger.error('Error getting expid from details')
         return None
 
-    def get_study_info(self, expid):
+    def get_experiment_info(self, expid):
         """
-        get the information about a given study dataid
+        get the information about a given experiment dataid
 
         Parameters
         ----------
         dataid : int
-            The dataid on the study (DataID field)
+            The dataid on the experiment (DataID field)
 
         Returns
         -------
         info : list of (str,str)
-            list of tuples for each entry in the study:
+            list of tuples for each entry in the experiment:
             (type,value) about dataid (i.e. ('PubMedID','100234'))
             empty if dataid not found
         """
@@ -164,18 +164,18 @@ class BactDB:
             return details
         return []
 
-    def get_study_annotations(self, expid):
-        """Get the list of annotations for study studyid
+    def get_experiment_annotations(self, expid):
+        """Get the list of annotations for experiment expid
 
         Parameters
         ----------
         expid : int
-            The dataid of the study
+            The dataid of the experiment
 
         Returns
         -------
         info: list of str
-            the list of curations for this study (1 item per curation)
+            the list of annotations for this experiment (1 item per annotation)
         """
         logger.debug('get experiment annotations for expid %d' % expid)
         rdata = {}
@@ -193,31 +193,31 @@ class BactDB:
             info.append(cstr)
         return info
 
-    def add_study_data(self, data, studyid=None):
-        """add new data entries (for a new study)
+    def add_experiment_data(self, data, expid=None):
+        """add new data entries (for a new experiment)
 
         Parameters
         ----------
         data : list of tuples (Type:Value)
             a list of tuples of (Type,Value) to add to Data table (i.e. ("PUBMEDID","322455") etc)
-        studyid : list of int
-            the ids in which this study appears (from find_study_id)
+        expid : list of int
+            the ids in which this experiment appears (from find_experiment_id)
 
         Returns
         -------
         suid : int
-            the value of DataID for the new study (from Data table)
+            the value of DataID for the new experiment (from Data table)
         """
-        # we need to get a new identifier for all entries in the study
+        # we need to get a new identifier for all entries in the experiment
         # there should be a more elegant way to do it
-        logger.debug("add_study_data for %d enteries" % len(data))
-        if studyid is None:
-            # add new study
-            logger.debug("add_study_data for a new study")
+        logger.debug("add_experiment_data for %d enteries" % len(data))
+        if expid is None:
+            # add new experiment
+            logger.debug("add_experiment_data for a new experiment")
         else:
-            logger.debug('add_study_data for existing study %d' % studyid)
+            logger.debug('add_experiment_data for existing experiment %d' % expid)
         rdata = {}
-        rdata['expId'] = studyid
+        rdata['expId'] = expid
         rdata['details'] = data
         res = requests.post(self.dburl + '/experiments/add_details', json=rdata)
         if res.status_code == 200:
@@ -228,7 +228,8 @@ class BactDB:
             logger.debug('error adding experiment. msg: %s' % res.content)
             return None
 
-    def add_annotations(self, expid, sequences, annotationtype, annotations, submittername='NA', description='', method='', primerid=0, agenttype='Calour', private='n'):
+    def add_annotations(self, expid, sequences, annotationtype, annotations, submittername='NA',
+                        description='', method='', primerid=0, agenttype='Calour', private='n'):
         """
         Add a new manual curation to the database
 
