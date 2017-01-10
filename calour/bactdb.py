@@ -119,7 +119,7 @@ class BactDB:
             details.append(['DataMD5', datamd5])
         if mapmd5:
             details.append(['MapMD5', mapmd5])
-        if len(details) == 0:
+        if not details:
             logger.warn('Error. MapMD5 and DataMD5 both missing from find_study_id')
             return None
 
