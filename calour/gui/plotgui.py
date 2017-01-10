@@ -17,10 +17,10 @@ class PlotGUI:
     ----------
     exp : Experiment
         the experiment associated with this gui
-    selected_features : dict of lineids
+    selected_features : dict of matplotlib.lines.Line2D
         used to track the selected features and plot horizontal lines for each selectiom
         keys - the selected features indeices, values - the line id for each selected feature
-    selected_samples : dict of lineids
+    selected_samples : dict of matplotlib.lines.Line2D
         used to track the selected samples and plot vertical lines for each selectiom
         keys - the selected sample indices, values - the line id for each selected samples
     '''
