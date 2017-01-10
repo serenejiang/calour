@@ -14,12 +14,12 @@ class BactDB:
     def get_seq_annotations(self, sequence):
         '''Get the annotations for a sequence
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         sequence : str (ACGT)
 
-        Returns:
-        --------
+        Returns
+        -------
         curs : list of list of (curation dict,list of [Type,Value] of curation details)
         '''
         rdata = {}
@@ -35,13 +35,13 @@ class BactDB:
     def get_annotation_strings(self, sequence):
         '''Get nice string summaries of annotations for a given sequence
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         sequence : str (ACGT)
             the sequence to query the annotation strings about
 
-        Returns:
-        --------
+        Returns
+        -------
         shortdesc : list of (dict,str) (annotationdetails,annotationsummary)
             a list of:
                 annotationdetails : dict
@@ -98,7 +98,9 @@ class BactDB:
         """
         find the data id for the data/map md5 (which are calculated on load)
         note the md5s don't change following filtering/normalization/etc... - only the original data
-        input:
+
+        Parameters
+        ----------
         datamd5 : str
             from Experiment.datamd5
         mapmd5 : str
@@ -106,7 +108,8 @@ class BactDB:
         getall : bool (optional)
             False (default) to get only 1st id, True to get a list of all
 
-        output:
+        Returns
+        -------
         expids: int (if getall=False - default) or list of int (if getall=True)
             an id or a list of ids of matching dataID indices (or None if no match)
         """
@@ -138,11 +141,14 @@ class BactDB:
     def get_study_info(self, expid):
         """
         get the information about a given study dataid
-        input:
+
+        Parameters
+        ----------
         dataid : int
             The dataid on the study (DataID field)
 
-        output:
+        Returns
+        -------
         info : list of (str,str)
             list of tuples for each entry in the study:
             (type,value) about dataid (i.e. ('PubMedID','100234'))
@@ -159,14 +165,15 @@ class BactDB:
         return []
 
     def get_study_annotations(self, expid):
-        """
-        get the list of annotations for study studyid
+        """Get the list of annotations for study studyid
 
-        input:
+        Parameters
+        ----------
         expid : int
             The dataid of the study
 
-        output:
+        Returns
+        -------
         info: list of str
             the list of curations for this study (1 item per curation)
         """
@@ -187,15 +194,17 @@ class BactDB:
         return info
 
     def add_study_data(self, data, studyid=None):
-        """
-        add new data entries (for a new study)
-        input:
+        """add new data entries (for a new study)
+
+        Parameters
+        ----------
         data : list of tuples (Type:Value)
             a list of tuples of (Type,Value) to add to Data table (i.e. ("PUBMEDID","322455") etc)
         studyid : list of int
             the ids in which this study appears (from find_study_id)
 
-        output:
+        Returns
+        -------
         suid : int
             the value of DataID for the new study (from Data table)
         """
