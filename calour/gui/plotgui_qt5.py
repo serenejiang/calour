@@ -169,7 +169,6 @@ class ApplicationWindow(QMainWindow):
         # link events to gui
         self.w_annotate.clicked.connect(self.annotate)
 
-
         self.main_widget.setFocus()
         self.setCentralWidget(self.main_widget)
 

@@ -67,7 +67,7 @@ def _get_md_from_biom(table):
     else:
         metadata = [dict(tmd) for tmd in metadata]
     md_df = pd.DataFrame(metadata)
-    md_df['ids']=ids
+    md_df['ids'] = ids
     md_df.set_index('ids', drop=False, inplace=True)
     # md_df.index.name = 'sequence'
     return md_df
@@ -135,8 +135,8 @@ def read(data_file, sample_metadata_file=None, feature_metadata_file=None,
         read the biom table into sparse or dense array
     '''
     logger.info('Reading experiment (biom table %s, map file %s)' % (data_file, sample_metadata_file))
-    exp_metadata={}
-    exp_metadata['map_md5']=''
+    exp_metadata = {}
+    exp_metadata['map_md5'] = ''
     sid, oid, data, md = _read_biom(data_file, sparse=sparse)
     if sample_metadata_file is not None:
         # reorder the sample id to align with biom

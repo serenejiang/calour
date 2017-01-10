@@ -13,6 +13,7 @@ import scipy
 import numpy as np
 from sklearn import preprocessing
 
+from .filtering import _filter_by_data
 
 logger = getLogger(__name__)
 

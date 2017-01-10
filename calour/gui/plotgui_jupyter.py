@@ -1,6 +1,3 @@
-import matplotlib
-from matplotlib.figure import Figure
-
 from ipywidgets import *
 from IPython.display import display, clear_output
 
@@ -77,9 +74,8 @@ class PlotGUI_Jupyter(PlotGUI):
         for cinfo in info:
             cstr = cinfo[1]
             ccolor = self._get_color(cinfo[0])
-            # idata += '<style> a:link {color:green; background-color:transparent; text-decoration:none} a:visited {color:pink; background-color:transparent; text-decoration:none} a:hover {color:red; background-color:transparent; text-decoration:underline} a:active  {color:yellow; background-color:transparent; text-decoration:underline} </style>'
-            idata += '<style> a:link {color:%s; background-color:transparent; text-decoration:none} a:visited {color:%s; background-color:transparent; text-decoration:none}</style>' % (ccolor, ccolor)
-            # idata += '<p style="color:%s;white-space:nowrap;"><a href="http://amnonim.webfactional.com/scdb_website/exp_info/19" target="_blank">%s</a></p>' % (ccolor, cstr)
+            idata += '<style> a:link {color:%s; background-color:transparent; text-decoration:none} a:visited {color:%s; background-color:transparent;'
+            ' text-decoration:none}</style>' % (ccolor, ccolor)
             idata += '<p style="color:%s;white-space:nowrap;"><a href="http://amnonim.webfactional.com/scdb_website/exp_info/19" target="_blank">%s</a></p>' % (ccolor, cstr)
         self.labdb.value = idata
 

@@ -8,7 +8,6 @@
 
 from logging import getLogger
 import scipy.sparse
-from os.path import join
 from copy import copy, deepcopy
 from importlib import import_module
 import inspect
@@ -17,7 +16,6 @@ from functools import wraps
 import pandas as pd
 import numpy as np
 import scipy
-import biom
 
 
 logger = getLogger(__name__)
@@ -248,13 +246,12 @@ def join_experiments(exp1, exp2, orig_field_name='orig_exp', orig_field_values=N
     newexp.description = 'join %s & %s' % (exp1.description, exp2.description)
 
     # test if we need to force a suffix (when both experiments contain the same sample)
-    if len(exp1.sample_metadata.index.intersection(exp2.sample_metadata.index))>0:
+    if len(exp1.sample_metadata.index.intersection(exp2.sample_metadata.index)) > 0:
         if suffixes in None:
             logger.info('both experiments contain same sample id. adding suffix _1, _2')
-            suffixes = ('_1','_2')
+            suffixes = ('_1', '_2')
 
-    all_feature_md = list(set(exp1.feature_metadata.columns).union(set(exp2.feature_metadata.columns)))
-
+    # all_feature_md = list(set(exp1.feature_metadata.columns).union(set(exp2.feature_metadata.columns)))
     return newexp
 
 
