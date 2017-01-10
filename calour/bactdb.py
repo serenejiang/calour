@@ -32,7 +32,7 @@ class BactDB:
         logger.debug('Found %d annotations for sequence %s' % (len(annotations), sequence))
         return annotations
 
-    def get_annotation_strings(self, sequence):
+    def get_seq_annotation_strings(self, sequence):
         '''Get nice string summaries of annotations for a given sequence
 
         Parameters
