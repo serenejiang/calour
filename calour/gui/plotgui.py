@@ -13,7 +13,8 @@ class PlotGUI:
 
     Various gui classes inherit this class
 
-    Attributes:
+    Attributes
+    ----------
     exp : Experiment
         the experiment associated with this gui
     selected_features : dict of lineids

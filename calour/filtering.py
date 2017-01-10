@@ -122,9 +122,11 @@ def _filter_by_data(data, predicate, axis=0, negate=False, **kwargs):
         select = np.ones(n, dtype=bool)
         if axis == 0:
             for row in range(n):
+                # convert the row from sparse to dense, and cast to 1d array
                 select[row] = predicate(data[row, :].todense().A1, **kwargs)
         elif axis == 1:
             for col in range(n):
+                # convert the column from sparse to dense, and cast to 1d array
                 select[col] = predicate(data[:, col].todense().A1, **kwargs)
     else:
         select = np.apply_along_axis(predicate, 1 - axis, data, **kwargs)
