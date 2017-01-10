@@ -228,34 +228,42 @@ class BactDB:
             logger.debug('error adding experiment. msg: %s' % res.content)
             return None
 
-    def add_annotations(self, expid, sequences, annotationtype, annotations, submittername='NA', description='', method='', primerid=0, agenttype='HeatSequer', private='n'):
+    def add_annotations(self, expid, sequences, annotationtype, annotations, submittername='NA', description='', method='', primerid=0, agenttype='Calour', private='n'):
         """
         Add a new manual curation to the database
 
         Paramerers
         ----------
-        db : scdbstruct
-            from dbstart()
         expid : int
-            the value of ExpID from Experiments table
+            the experiment ID - the value of ExpID from Experiments table
         sequences : list of ACGT
             the sequences to curate
         annotationtype : str
-            the curation type (COMMON,DIFFEXP,CONTAM,HIGHFREQ,PATHOGEN)
-        annotations : list of Type,Value
-            The curations to add to the CurationList table (Type,Value)
-        submittername : str
-            Name of the submitter (first,last) or NA
-        description : str
-            text description of the curation entry (i.e. "lower in whole wheat pita bread")
-        method : str
-            text description of how the curation was detected - only if needed
-        primerid : int
+            the annotation type. can be:
+            'COMMON' : the sequences are common in the samples (present in >0.5 of the samples)
+            'DIFFEXP' : the sequences are different between two conditions in the samples
+            'CONTAM' : the sequences are suspected experimental contaminants
+            'HIGHFREQ' : the sequences are found in mean high frequency (>1%) in the samples
+            'PATHOGEN' : the sequences are known pathogens
+        annotations : list of Type, Value
+            The annotations to add to the AnnotationsList table (Type,Value).
+            Value is the ontology term to add
+            Type can be:
+            'ALL' : the ontology term applies to all samples
+            'LOW' : the sequences are present less in samples with the ontology term
+            'HIGH' : the sequences are present more in samples with the ontology term
+        submittername : str (optional)
+            Name of the submitter (first,last) or NA (default)
+        description : str (optional)
+            text description of the annotation entry (i.e. "lower in whole wheat pita bread"). default is ''
+        method : str (optional)
+            text description of how the annotation was detected (mostly for 'DIFFEXP' annotations). default is ''
+        primerid : int (optional)
             the PrimerID from Primers table of the sequences (usually 1 - the V4 515F,806R)
-        agenttype : str
-            the program submitting the curation
+        agenttype : str (optional)
+            the program submitting the curation (defaul='Calour')
         private : str (optional)
-            'n' (default) or 'y'
+            'n' (default) for public annotation, or 'y' for private annotation (visible only to the user submitting)
 
         Returns
         -------
