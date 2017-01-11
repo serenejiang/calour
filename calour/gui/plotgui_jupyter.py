@@ -1,4 +1,4 @@
-from ipywidgets import *
+import ipywidgets
 from IPython.display import display, clear_output
 
 from calour.bactdb import BactDB
@@ -17,24 +17,24 @@ class PlotGUI_Jupyter(PlotGUI):
     def get_figure(self, newfig=None):
         fig = PlotGUI.get_figure(self, newfig=newfig)
         # self.labtax = Label('Feature:-')
-        self.labtax = Label('-')
+        self.labtax = ipywidgets.Label('-')
         # self.labsamp = Label('Sample:')
-        self.labsamp = Label('-')
-        self.copy_sample_info = Button(description='C', width='2%')
-        self.select_sample_info = Dropdown(options=list(self.exp.sample_metadata.columns), width='10%', max_width='10%', overflow_x='auto')
-        self.copy_feature_info = Button(description='C', width='2%')
-        self.select_feature_info = Dropdown(options=list(self.exp.feature_metadata.columns), width='10%')
+        self.labsamp = ipywidgets.Label('-')
+        self.copy_sample_info = ipywidgets.Button(description='C', width='2%')
+        self.select_sample_info = ipywidgets.Dropdown(options=list(self.exp.sample_metadata.columns), width='10%', max_width='10%', overflow_x='auto')
+        self.copy_feature_info = ipywidgets.Button(description='C', width='2%')
+        self.select_feature_info = ipywidgets.Dropdown(options=list(self.exp.feature_metadata.columns), width='10%')
 
-        self.labreads = Label('Reads:-')
-        self.copy_view = Button(description='Copy View')
+        self.labreads = ipywidgets.Label('Reads:-')
+        self.copy_view = ipywidgets.Button(description='Copy View')
         self.copy_view.on_click(lambda f: _copy_view(f, self))
 
-        self.lab_selected = Label('Selected: 0')
-        self.save_selection = Button(description='Save')
-        self.annotate_selection = Button(description='Annotate')
+        self.lab_selected = ipywidgets.Label('Selected: 0')
+        self.save_selection = ipywidgets.Button(description='Save')
+        self.annotate_selection = ipywidgets.Button(description='Annotate')
         self.annotate_selection.on_click(lambda f: _annotate(f, self))
 
-        self.labdb = HTML('?')
+        self.labdb = ipywidgets.HTML('?')
         self.labdb.layout.overflow = 'auto'
         self.labdb.layout.overflow_x = 'auto'
         self.labdb.layout.max_height = '50px'
@@ -42,18 +42,18 @@ class PlotGUI_Jupyter(PlotGUI):
         self.labdb.layout.border = '5px solid gray;'
         self.labdb.background_color = 'red'
         # self.labdb.layout.width = '200px'
-        self.zoomin = Button(description='+', width='3%')
+        self.zoomin = ipywidgets.Button(description='+', width='3%')
         self.zoomin.on_click(lambda f: zoom_in(f, self))
-        self.zoomout = Button(description='-', width='3%')
+        self.zoomout = ipywidgets.Button(description='-', width='3%')
         self.zoomout.on_click(lambda f: zoom_out(f, self))
         # display(HBox([self.zoomin,self.zoomout]))
 
-        display(HBox([self.copy_feature_info, self.select_feature_info, self.labtax]))
+        display(ipywidgets.HBox([self.copy_feature_info, self.select_feature_info, self.labtax]))
         # display(self.labtax)
-        display(HBox([self.copy_sample_info, self.select_sample_info, self.labsamp]))
-        display(HBox([self.labreads, self.copy_view]))
+        display(ipywidgets.HBox([self.copy_sample_info, self.select_sample_info, self.labsamp]))
+        display(ipywidgets.HBox([self.labreads, self.copy_view]))
         # display(self.labreads)
-        display(HBox([self.lab_selected, self.save_selection, self.annotate_selection]))
+        display(ipywidgets.HBox([self.lab_selected, self.save_selection, self.annotate_selection]))
         display(self.labdb)
         return fig
 

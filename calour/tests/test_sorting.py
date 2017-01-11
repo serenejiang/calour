@@ -11,7 +11,6 @@ from os.path import join
 
 import pandas as pd
 import pandas.util.testing as pdt
-import numpy as np
 
 import calour as ca
 from calour._testing import Tests, assert_experiment_equal
