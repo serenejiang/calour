@@ -1,6 +1,8 @@
 import requests
 from logging import getLogger
 
+from .util import get_config_value
+
 
 logger = getLogger(__name__)
 
@@ -10,6 +12,52 @@ class BactDB:
         # Web address of the bact server
         # self.dburl = 'http://amnonim.webfactional.com/scdb_main'
         self.dburl = 'http://amnonim.webfactional.com/scdb_develop'
+        self.username = get_config_value('username',section='dbBact')
+        self.password = get_config_value('password',section='dbBact')
+
+    def _post(self, api, rdata):
+        '''POST a request to dbBact using authorization parameters
+
+        Parameters
+        ----------
+        api : str
+            the location in the dbBact REST API to post the request to
+        rdata : dict
+            parameters to pass to the dbBact REST API
+
+        Returns
+        -------
+        res : request
+            the result of the request
+        '''
+        rdata['user'] = self.username
+        rdata['pwd'] = self.password
+        res = requests.post(self.dburl + '/' + api, json=rdata)
+        if res.status_code != 200:
+            logger.warn('REST error %s enountered when accessing dbBact %s' % (res.reason, api))
+        return res
+
+    def _get(self, api, rdata):
+        '''GET a request to dbBact using authorization parameters
+
+        Parameters
+        ----------
+        api : str
+            the location in the dbBact REST API to post the request to
+        rdata : dict
+            parameters to pass to the dbBact REST API
+
+        Returns
+        -------
+        res : request
+            the result of the request
+        '''
+        rdata['user'] = self.username
+        rdata['pwd'] = self.password
+        res = requests.get(self.dburl + '/' + api, json=rdata)
+        if res.status_code != 200:
+            logger.warn('REST error %s enountered when accessing dbBact %s' % (res.reason, api))
+        return res
 
     def get_seq_annotations(self, sequence):
         '''Get the annotations for a sequence
@@ -24,7 +72,7 @@ class BactDB:
         '''
         rdata = {}
         rdata['sequence'] = sequence
-        res = requests.get(self.dburl + '/sequences/get_annotations', json=rdata)
+        res = self._get('sequences/get_annotations', rdata)
         if res.status_code != 200:
             logger.warn('error getting annotations for sequence %s' % sequence)
             return []
@@ -125,7 +173,7 @@ class BactDB:
 
         rdata = {}
         rdata['details'] = details
-        res = requests.get(self.dburl + '/experiments/get_id', json=rdata)
+        res = self._get('experiments/get_id', rdata)
         if res.status_code == 200:
             expids = res.json()['expId']
             if not getall:
@@ -157,7 +205,7 @@ class BactDB:
         logger.debug('get experiment details for expid %d' % expid)
         rdata = {}
         rdata['expId'] = expid
-        res = requests.get(self.dburl + '/experiments/get_details', json=rdata)
+        res = self._get('experiments/get_details', rdata)
         if res.status_code == 200:
             details = res.json()['details']
             logger.debug('Found %d details for experiment %d' % (len(details), expid))
@@ -180,7 +228,7 @@ class BactDB:
         logger.debug('get experiment annotations for expid %d' % expid)
         rdata = {}
         rdata['expId'] = expid
-        res = requests.get(self.dburl + '/experiments/get_annotations', json=rdata)
+        res = self._get('experiments/get_annotations', rdata)
         if res.status_code != 200:
             logger.warn('error getting annotations for experiment %d' % expid)
             return []
@@ -219,7 +267,7 @@ class BactDB:
         rdata = {}
         rdata['expId'] = expid
         rdata['details'] = data
-        res = requests.post(self.dburl + '/experiments/add_details', json=rdata)
+        res = self._post('experiments/add_details', rdata)
         if res.status_code == 200:
             newid = res.json()['expId']
             logger.debug('experiment added. id is %d' % newid)
@@ -291,7 +339,7 @@ class BactDB:
         rdata['private'] = private
         rdata['annotationList'] = annotations
 
-        res = requests.post(self.dburl + '/annotations/add', json=rdata)
+        res = self._post('annotations/add', rdata)
         if res.status_code == 200:
             newid = res.json()['annotationId']
             logger.debug('Finished adding experiment id %d annotationid %d' % (expid, newid))
@@ -299,3 +347,20 @@ class BactDB:
         logger.warn('problem adding annotations for experiment id %d' % expid)
         logger.debug(res.content)
         return None
+
+    def get_seq_list_fast_annotations(self, sequences):
+        '''Get annotations for all sequences in list using compact format and with parent ontology terms
+
+        Params
+        ------
+        sequences : list of sequence str ('ACGT')
+            the sequences to get annotations for
+
+        Returns
+        -------
+        '''
+        rdata = {}
+        rdata['sequences'] = sequences
+        res = self._get('sequences/get_fast_annotations',rdata)
+
+        return res

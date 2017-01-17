@@ -73,10 +73,10 @@ class PlotGUI_Jupyter(PlotGUI):
         idata = ''
         for cinfo in info:
             cstr = cinfo[1]
+            cannotationid = cinfo[0]['annotationid']
             ccolor = self._get_color(cinfo[0])
-            idata += '<style> a:link {color:%s; background-color:transparent; text-decoration:none} a:visited {color:%s; background-color:transparent;'
-            ' text-decoration:none}</style>' % (ccolor, ccolor)
-            idata += '<p style="color:%s;white-space:nowrap;"><a href="http://amnonim.webfactional.com/scdb_website/exp_info/19" target="_blank">%s</a></p>' % (ccolor, cstr)
+            idata += '<style> a:link {color:%s; background-color:transparent; text-decoration:none} a:visited {color:%s; background-color:transparent; text-decoration:none}</style>' % (ccolor, ccolor)
+            idata += '<p style="color:%s;white-space:nowrap;"><a href="http://amnonim.webfactional.com/scdb_website/annotation_info/%d" target="_blank">%s</a></p>' % (ccolor, cannotationid, cstr)
         self.labdb.value = idata
 
     def _get_color(self, details):

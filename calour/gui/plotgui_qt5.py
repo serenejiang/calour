@@ -25,15 +25,15 @@ class PlotGUI_QT5(PlotGUI):
     def get_figure(self, newfig=None):
         app_created = False
         app = QtCore.QCoreApplication.instance()
-        print(sys.argv)
         if app is None:
             # app = QApplication(sys.argv)
-            app = QApplication(['calour-%s' % time.ctime()])
+            app = QApplication(sys.argv)
             app_created = True
         self.app = app
         self.app_created = app_created
-        if app_created:
-            app.references = set()
+        # if app_created:
+        #     app.references = set()
+        app.references = set()
 
         self.aw = ApplicationWindow(self)
         # if app_created:
@@ -44,9 +44,9 @@ class PlotGUI_QT5(PlotGUI):
         return self.aw.plotfigure
 
     def run_gui(self):
-        self.app.exec_()
-        # if self.app_created:
-        #     self.app.exec_()
+        # self.app.exec_()
+        if self.app_created:
+            self.app.exec_()
 
     def update_info(self):
         taxname = self.exp.feature_metadata['taxonomy'][self.last_select_feature]
