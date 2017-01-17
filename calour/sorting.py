@@ -191,7 +191,6 @@ def _log_mean(x, logit=1):
             # make a copy because it's changed inplace
             x = x.copy()
         x[x < logit] = logit
-        # import ipdb; ipdb.set_trace()
         return np.log2(x).mean()
 
 
