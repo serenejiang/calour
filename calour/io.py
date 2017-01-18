@@ -81,6 +81,7 @@ def _read_table(f):
 
     '''
     table = pd.read_table(f, sep='\t')
+    table.fillna('na',inplace=True)
     table.set_index(table.columns[0], drop=False, inplace=True)
     # make sure the sample ID is string-type
     table.index = table.index.astype(np.str)
