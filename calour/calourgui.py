@@ -62,7 +62,7 @@ class AppWindow(QtWidgets.QMainWindow):
 
 
         # load sample dataset for debugging
-        exp = ca.read_bacteria('/Users/amnon/Projects/centenarians/final.withtax.biom', '/Users/amnon/Projects/centenarians/map.txt')
+        exp = ca.read_taxa('/Users/amnon/Projects/centenarians/final.withtax.biom', '/Users/amnon/Projects/centenarians/map.txt')
         exp._studyname = 'centenarians'
         self.addexp(exp)
         self.show()
@@ -296,7 +296,7 @@ class AppWindow(QtWidgets.QMainWindow):
             exptype = str(win.wType.currentText())
             if exptype == 'Amplicon':
                 try:
-                    expdat = ca.read_bacteria(tablefname, mapfname)
+                    expdat = ca.read_taxa(tablefname, mapfname)
                 except:
                     logger.warn('Load for table %s map %s failed' % (tablefname, mapfname))
                     return
@@ -363,9 +363,10 @@ def dialog(items, expdat=None,  title=None):
                 self.setWindowTitle(title)
 
             self.main_widget = QWidget(self)
-            self.layout = QVBoxLayout(self.main_widget)
-            self.main_widget.setFocus()
-            self.setSizePolicy(QSizePolicy(QSizePolicy.Expanding,QSizePolicy.Expanding))
+            # self.layout = QVBoxLayout(self.main_widget)
+            self.layout = QVBoxLayout(self)
+            # self.main_widget.setFocus()
+            # self.setSizePolicy(QSizePolicy(QSizePolicy.Expanding,QSizePolicy.Expanding))
 
             self.widgets={}
             for citem in items:
@@ -447,6 +448,7 @@ def dialog(items, expdat=None,  title=None):
             return output
 
     aw = DialogWindow(items, expdat=expdat)
+    aw.show()
     # if app_created:
     #     app.references.add(self.aw)
     aw.adjustSize()

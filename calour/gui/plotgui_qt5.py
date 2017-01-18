@@ -1,5 +1,5 @@
-import time
 import sys
+from logging import getLogger
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
@@ -11,6 +11,9 @@ from PyQt5.QtWidgets import QApplication
 
 from calour.dbbact import DBBact
 from calour.gui.plotgui import PlotGUI
+
+
+logger = getLogger(__name__)
 
 
 class PlotGUI_QT5(PlotGUI):
@@ -25,28 +28,32 @@ class PlotGUI_QT5(PlotGUI):
     def get_figure(self, newfig=None):
         app_created = False
         app = QtCore.QCoreApplication.instance()
+        logger.debug('Qt app is %s' % app)
         if app is None:
             # app = QApplication(sys.argv)
             app = QApplication(sys.argv)
             app_created = True
+            logger.debug('Qt app created')
         self.app = app
         self.app_created = app_created
-        # if app_created:
-        #     app.references = set()
-        app.references = set()
+        if not hasattr(app,'references'):
+            app.references = set()
 
         self.aw = ApplicationWindow(self)
-        # if app_created:
-        #     app.references.add(self.aw)
         app.references.add(self.aw)
         self.aw.setWindowTitle("Calour")
         self.aw.show()
         return self.aw.plotfigure
 
     def run_gui(self):
-        # self.app.exec_()
-        if self.app_created:
-            self.app.exec_()
+        logger.debug('opening plot window')
+        self.app.exec_()
+        # nice cleanup
+        if self.aw in self.app.references:
+            logger.debug('removing window from app window list')
+            self.app.references.remove(self.aw)
+        else:
+            logger.debug('window not in app window list. Not removed')
 
     def update_info(self):
         taxname = self.exp.feature_metadata['taxonomy'][self.last_select_feature]
