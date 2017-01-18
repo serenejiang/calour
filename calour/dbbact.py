@@ -7,11 +7,11 @@ from .util import get_config_value
 logger = getLogger(__name__)
 
 
-class BactDB:
+class DBBact:
     def __init__(self):
         # Web address of the bact server
-        # self.dburl = 'http://amnonim.webfactional.com/scdb_main'
-        self.dburl = 'http://amnonim.webfactional.com/scdb_develop'
+        self.dburl = 'http://amnonim.webfactional.com/scdb_main'
+        # self.dburl = 'http://amnonim.webfactional.com/scdb_develop'
         self.username = get_config_value('username',section='dbBact')
         self.password = get_config_value('password',section='dbBact')
 

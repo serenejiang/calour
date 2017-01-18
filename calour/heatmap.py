@@ -72,7 +72,7 @@ def plot(exp, sample_field=None, feature_field=None, max_features=1000,
     gui : str (optional)
         Name of the gui module to use for displaying the heatmap. options:
         'cli' : just cli information about selected sample/feature.
-        'qt5' : gui using QT5 (with full bactdb interface)
+        'qt5' : gui using QT5 (with full dbBact interface)
         'jupyter' : gui for Jupyter notebooks (using widgets)
         Other string : name of child class of plotgui (which should reside in gui/lower(classname).py)
     axis : matplotlib axis or None (optional)

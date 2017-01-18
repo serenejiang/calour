@@ -1,7 +1,7 @@
 import ipywidgets
 from IPython.display import display, clear_output
 
-from calour.bactdb import BactDB
+from calour.dbbact import DBBact
 from calour.gui.plotgui import PlotGUI
 
 
@@ -12,7 +12,7 @@ class PlotGUI_Jupyter(PlotGUI):
     '''
     def __init__(self, *kargs, **kwargs):
         PlotGUI.__init__(self, *kargs, **kwargs)
-        self.bactdb = BactDB()
+        self.dbbact = DBBact()
 
     def get_figure(self, newfig=None):
         fig = PlotGUI.get_figure(self, newfig=newfig)
@@ -69,7 +69,7 @@ class PlotGUI_Jupyter(PlotGUI):
         self.labsamp.value = str(sampname)
         self.labreads.value = 'Reads:{:.01f}'.format(self.exp.get_data()[self.last_select_sample, self.last_select_feature])
         self.lab_selected.value = 'Selected: %d' % len(self.selected_features)
-        info = self.bactdb.get_seq_annotation_strings(sequence)
+        info = self.dbbact.get_seq_annotation_strings(sequence)
         idata = ''
         for cinfo in info:
             cstr = cinfo[1]

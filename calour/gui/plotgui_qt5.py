@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import (QMainWindow, QHBoxLayout, QVBoxLayout,
                              QFrame, QComboBox, QScrollArea, QListWidgetItem)
 from PyQt5.QtWidgets import QApplication
 
-from calour.bactdb import BactDB
+from calour.dbbact import DBBact
 from calour.gui.plotgui import PlotGUI
 
 
@@ -20,7 +20,7 @@ class PlotGUI_QT5(PlotGUI):
     '''
     def __init__(self, *kargs, **kwargs):
         PlotGUI.__init__(self, *kargs, **kwargs)
-        self.bactdb = BactDB()
+        self.dbbact = DBBact()
 
     def get_figure(self, newfig=None):
         app_created = False
@@ -58,7 +58,7 @@ class PlotGUI_QT5(PlotGUI):
         self.aw.w_field_val.setText(str(self.exp.sample_metadata[csample_field][self.last_select_sample]))
 
         self.aw.w_dblist.clear()
-        info = self.bactdb.get_seq_annotation_strings(sequence)
+        info = self.dbbact.get_seq_annotation_strings(sequence)
         self.addtocdblist(info)
 
     def addtocdblist(self, info):
