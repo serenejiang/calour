@@ -201,7 +201,8 @@ class AppWindow(QtWidgets.QMainWindow):
 
     def menuRemove(self):
         if len(self.bMainList.selectedItems()) > 1:
-            if QtWidgets.QMessageBox.warning(self, "Remove samples?", "Remove %d samples?" % len(self.bMainList.selectedItems()), QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No) == QtWidgets.QMessageBox.No:
+            if QtWidgets.QMessageBox.warning(self, "Remove samples?", "Remove %d samples?" % len(self.bMainList.selectedItems()),
+                                             QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No) == QtWidgets.QMessageBox.No:
                 return
         for currentItemName in self.bMainList.selectedItems():
             currentItemName = str(currentItemName.text())

@@ -144,7 +144,7 @@ def plot(exp, sample_field=None, feature_field=None, max_features=1000,
         ax.set_xticks(x_pos[:-1] + (x_pos[1:] - x_pos[:-1]) / 2)
         # shorten xlabels that are too long:
         if xlabel_maxlen is not None:
-            x_val = [clabel[:2] + '..' + clabel[5-xlabel_maxlen:] if len(clabel) > xlabel_maxlen else clabel for clabel in x_val]
+            x_val = [str(clabel[:2]) + '..' + str(clabel[5-xlabel_maxlen:]) if len(str(clabel)) > xlabel_maxlen else str(clabel) for clabel in x_val]
         ax.set_xticklabels(x_val, rotation=xlabel_rotation, ha='right')
 
     # plot y ticks and labels
