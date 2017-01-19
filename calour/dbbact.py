@@ -12,8 +12,8 @@ class DBBact:
         # Web address of the bact server
         self.dburl = 'http://amnonim.webfactional.com/scdb_main'
         # self.dburl = 'http://amnonim.webfactional.com/scdb_develop'
-        self.username = get_config_value('username',section='dbBact')
-        self.password = get_config_value('password',section='dbBact')
+        self.username = get_config_value('username', section='dbBact')
+        self.password = get_config_value('password', section='dbBact')
 
     def _post(self, api, rdata):
         '''POST a request to dbBact using authorization parameters
@@ -361,6 +361,6 @@ class DBBact:
         '''
         rdata = {}
         rdata['sequences'] = sequences
-        res = self._get('sequences/get_fast_annotations',rdata)
+        res = self._get('sequences/get_fast_annotations', rdata)
 
         return res

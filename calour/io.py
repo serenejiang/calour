@@ -81,7 +81,7 @@ def _read_table(f):
 
     '''
     table = pd.read_table(f, sep='\t')
-    table.fillna('na',inplace=True)
+    table.fillna('na', inplace=True)
     table.set_index(table.columns[0], drop=False, inplace=True)
     # make sure the sample ID is string-type
     table.index = table.index.astype(np.str)
@@ -233,8 +233,39 @@ def save_commands(exp, f):
     '''Save the commands used to generate the exp '''
 
 
-def save_fasta(exp, f):
-    ''' '''
+def save_fasta(exp, f, seqs=None):
+    '''Save a list of sequences to fasta.
+    Use taxonomy information if available, otherwise just use sequence as header.
+
+    Parameters
+    ----------
+    f : str
+        the filename to save to
+    seqs : list of str sequences ('ACGT') or None (optional)
+        None (default) to save all sequences in exp, or list of sequences to only save these sequences.
+        Note: sequences not in exp will not be saved
+    '''
+    logger.debug('save_fasta to file %s' % f)
+    if seqs is None:
+        logger.debug('no sequences supplied - saving all sequences')
+        seqs = exp.feature_metadata.index.values
+    num_skipped = 0
+    if 'taxonomy' in exp.feature_metadata.columns:
+        add_taxonomy = True
+    else:
+        logger.debug('no taxonomy field in experiment. saving without taxonomy')
+        add_taxonomy = False
+    with open(f,'w') as fasta_file:
+        for cseq in seqs:
+            if cseq not in exp.feature_metadata:
+                num_skipped += 1
+                continue
+            if add_taxonomy:
+                cheader = exp.feature_metadata['taxonomy'][cseq]
+            else:
+                cheader = cseq
+        fasta_file.write('>%s\n%s\n' % (cheader,cseq))
+    logger.debug('wrote fasta file with %d sequences. %d sequences skipped' % (len(seqs)-num_skipped, num_skipped))
 
 
 def _create_biom_table_from_exp(exp, addtax=True):

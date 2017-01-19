@@ -115,6 +115,10 @@ class PlotGUI:
 
 
 def _button_press_callback(event, hdat):
+    ax = event.inaxes
+    if ax is None:
+        return
+
     rx = int(round(event.xdata))
     ry = int(round(event.ydata))
 
@@ -141,6 +145,8 @@ def _button_press_callback(event, hdat):
 
 def _key_press_callback(event, hdat):
     ax = event.inaxes
+    if ax is None:
+        return
     ylim_lower, ylim_upper = ax.get_ylim()
     xlim_lower, xlim_upper = ax.get_xlim()
 
@@ -200,7 +206,7 @@ def _key_press_callback(event, hdat):
     else:
         return
 
-#    plt.tight_layout()
+    # plt.tight_layout()
     hdat.canvas.draw()
 
 

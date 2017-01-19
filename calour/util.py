@@ -180,7 +180,7 @@ def set_config_value(key, value, section='DEFAULT', config_file_name=None):
     config.read(config_file_name)
     if section not in config:
         config.add_section(section)
-    config.set(section,key,value)
+    config.set(section, key, value)
     with open(config_file_name, 'w') as config_file:
         config.write(config_file)
     logger.debug('wrote key %s value %s to config file' % (key, value))

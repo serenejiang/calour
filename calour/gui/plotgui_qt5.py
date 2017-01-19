@@ -36,7 +36,7 @@ class PlotGUI_QT5(PlotGUI):
             logger.debug('Qt app created')
         self.app = app
         self.app_created = app_created
-        if not hasattr(app,'references'):
+        if not hasattr(app, 'references'):
             app.references = set()
 
         self.aw = ApplicationWindow(self)
@@ -175,6 +175,7 @@ class ApplicationWindow(QMainWindow):
 
         # link events to gui
         self.w_annotate.clicked.connect(self.annotate)
+        self.w_sequence.clicked.connect(self.sequence)
 
         self.main_widget.setFocus()
         self.setCentralWidget(self.main_widget)
@@ -184,6 +185,13 @@ class ApplicationWindow(QMainWindow):
 
     def closeEvent(self, ce):
         self.fileQuit()
+
+    def sequence(self):
+        '''Copy the sequence to the clipboard
+        '''
+        cseq = self.gui.exp.feature_metadata.index[self.gui.last_select_feature]
+        clipboard = QApplication.clipboard()
+        clipboard.setText(cseq)
 
     def annotate(self):
         '''Add database annotation to selected features

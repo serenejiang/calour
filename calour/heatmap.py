@@ -40,7 +40,7 @@ def _transition_index(l):
 
 
 def plot(exp, sample_field=None, feature_field=None, max_features=1000,
-         logit=True, log_cutoff=1, clim=(0, 10), xlabel_rotation=45, cmap=None, title=None, gui='cli', axis=None, rect=None):
+         logit=True, log_cutoff=1, clim=(0, 10), xlabel_rotation=45, xlabel_maxlen=10, cmap=None, title=None, gui='cli', axis=None, rect=None):
     '''Plot an experiment heatmap
 
     Plot an interactive heatmap for the experiment
@@ -65,6 +65,9 @@ def plot(exp, sample_field=None, feature_field=None, max_features=1000,
         the min and max values for the heatmap or None to use all range
     xlabel_rotation : float (optional)
         The rotation angle for the x labels (if sample_field is supplied)
+    xlabel_rotation : int (optional) or None
+        The maximal length for the x label strings (will be cut to this length if longer). Used to prevent long labels from taking too much space.
+        None indicates no cutting
     colormap : None or str (optional)
         None (default) to use mpl default color map. str to use colormap named str.
     title : None or str (optional)
@@ -139,6 +142,9 @@ def plot(exp, sample_field=None, feature_field=None, max_features=1000,
         x_pos.append(exp.data.shape[0])
         x_pos = np.array(x_pos)
         ax.set_xticks(x_pos[:-1] + (x_pos[1:] - x_pos[:-1]) / 2)
+        # shorten xlabels that are too long:
+        if xlabel_maxlen is not None:
+            x_val = [clabel[:2] + '..' + clabel[5-xlabel_maxlen:] if len(clabel)>xlabel_maxlen else clabel for clabel in x_val]
         ax.set_xticklabels(x_val, rotation=xlabel_rotation, ha='right')
 
     # plot y ticks and labels
@@ -146,6 +152,8 @@ def plot(exp, sample_field=None, feature_field=None, max_features=1000,
         if feature_field not in exp.feature_metadata:
             raise ValueError('Feature field %s not in feature metadata' % feature_field)
         labels = [x for x in exp.feature_metadata[feature_field]]
+        ylabel_maxlen = 15
+        labels = [clabel[-ylabel_maxlen:] if len(clabel)>ylabel_maxlen else clabel for clabel in labels]
         xs = np.arange(len(labels))
 
         # display only when zoomed enough
@@ -158,9 +166,10 @@ def plot(exp, sample_field=None, feature_field=None, max_features=1000,
             # set the maximal number of feature lables
             ax.yaxis.set_major_formatter(mpl.ticker.FuncFormatter(format_fn))
             ax.yaxis.set_major_locator(mpl.ticker.MaxNLocator(max_features, integer=True))
+            ax.tick_params(axis='y', labelsize=8)
         else:
             # otherwise show all labels
-            ax.set_yticks(xs)
+            ax.set_yticks(xs,fontsize=8)
 
     # set the mouse hover string to the value of abundance
     def x_y_info(x, y):
@@ -179,5 +188,7 @@ def plot(exp, sample_field=None, feature_field=None, max_features=1000,
     # link the interactive plot functions
     hdat.connect_functions(fig)
 
+    # make the axis titles show
+    fig.tight_layout()
     plt.show()
     hdat.run_gui()
