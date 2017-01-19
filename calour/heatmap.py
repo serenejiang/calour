@@ -144,7 +144,7 @@ def plot(exp, sample_field=None, feature_field=None, max_features=1000,
         ax.set_xticks(x_pos[:-1] + (x_pos[1:] - x_pos[:-1]) / 2)
         # shorten xlabels that are too long:
         if xlabel_maxlen is not None:
-            x_val = [clabel[:2] + '..' + clabel[5-xlabel_maxlen:] if len(clabel)>xlabel_maxlen else clabel for clabel in x_val]
+            x_val = [clabel[:2] + '..' + clabel[5-xlabel_maxlen:] if len(clabel) > xlabel_maxlen else clabel for clabel in x_val]
         ax.set_xticklabels(x_val, rotation=xlabel_rotation, ha='right')
 
     # plot y ticks and labels
@@ -153,7 +153,7 @@ def plot(exp, sample_field=None, feature_field=None, max_features=1000,
             raise ValueError('Feature field %s not in feature metadata' % feature_field)
         labels = [x for x in exp.feature_metadata[feature_field]]
         ylabel_maxlen = 15
-        labels = [clabel[-ylabel_maxlen:] if len(clabel)>ylabel_maxlen else clabel for clabel in labels]
+        labels = [clabel[-ylabel_maxlen:] if len(clabel) > ylabel_maxlen else clabel for clabel in labels]
         xs = np.arange(len(labels))
 
         # display only when zoomed enough
@@ -169,7 +169,7 @@ def plot(exp, sample_field=None, feature_field=None, max_features=1000,
             ax.tick_params(axis='y', labelsize=8)
         else:
             # otherwise show all labels
-            ax.set_yticks(xs,fontsize=8)
+            ax.set_yticks(xs, fontsize=8)
 
     # set the mouse hover string to the value of abundance
     def x_y_info(x, y):

@@ -87,7 +87,9 @@ class AppWindow(QtWidgets.QMainWindow):
         '''
         expdat = self.get_exp_from_selection()
         sort_field_vals = ['<none>']+list(expdat.sample_metadata.columns)
-        res = dialog([{'type': 'label', 'label': 'Plot experiment %s' % expdat._studyname}, {'type': 'combo', 'label': 'Field', 'items': sort_field_vals}, {'type': 'bool', 'label': 'sort'}], expdat=expdat)
+        res = dialog([{'type': 'label', 'label': 'Plot experiment %s' % expdat._studyname},
+                      {'type': 'combo', 'label': 'Field', 'items': sort_field_vals},
+                      {'type': 'bool', 'label': 'sort'}], expdat=expdat)
         if res is None:
             return
         if res['Field'] == '<none>':
@@ -103,7 +105,9 @@ class AppWindow(QtWidgets.QMainWindow):
 
     def sort_samples(self):
         expdat = self.get_exp_from_selection()
-        res = dialog([{'type': 'label', 'label': 'Sort Samples'}, {'type': 'field', 'label': 'Field'}, {'type': 'string', 'label': 'new name', 'default': expdat._studyname + '-sort-samples'}], expdat=expdat)
+        res = dialog([{'type': 'label', 'label': 'Sort Samples'},
+                      {'type': 'field', 'label': 'Field'},
+                      {'type': 'string', 'label': 'new name', 'default': expdat._studyname + '-sort-samples'}], expdat=expdat)
         if res is None:
             return
         newexp = expdat.sort_by_metadata(res['field'], axis=0)
@@ -118,7 +122,9 @@ class AppWindow(QtWidgets.QMainWindow):
 
     def filter_min_reads(self):
         expdat = self.get_exp_from_selection()
-        res = dialog([{'type': 'label', 'label': 'Filter minimal reads per sample'}, {'type': 'int', 'label': 'min reads', 'max': 50000}, {'type': 'string', 'label': 'new name', 'default': expdat._studyname+'-filter-min-reads'}], expdat=expdat)
+        res = dialog([{'type': 'label', 'label': 'Filter minimal reads per sample'},
+                      {'type': 'int', 'label': 'min reads', 'max': 50000},
+                      {'type': 'string', 'label': 'new name', 'default': expdat._studyname+'-filter-min-reads'}], expdat=expdat)
         if res is None:
             return
         newexp = expdat.filter_by_data('sum_abundance', axis=0, cutoff=res['min reads'])
@@ -128,7 +134,11 @@ class AppWindow(QtWidgets.QMainWindow):
     def filter_samples(self):
         expdat = self.get_exp_from_selection()
         logger.debug('filter samples for study: %s' % expdat._studyname)
-        res = dialog([{'type': 'label', 'label': 'Filter Samples'}, {'type': 'field', 'label': 'Field'}, {'type': 'value', 'label': 'vals'}, {'type': 'bool', 'label': 'negate'}, {'type': 'string', 'label': 'new name', 'default': expdat._studyname + '-filter-samples'}], expdat=expdat)
+        res = dialog([{'type': 'label', 'label': 'Filter Samples'},
+                      {'type': 'field', 'label': 'Field'},
+                      {'type': 'value', 'label': 'vals'},
+                      {'type': 'bool', 'label': 'negate'},
+                      {'type': 'string', 'label': 'new name', 'default': expdat._studyname + '-filter-samples'}], expdat=expdat)
         if res is None:
             return
         logger.debug('filtering field %s vlaue %s negate %s' % (res['field'], res['value'], res['negate']))
@@ -166,15 +176,16 @@ class AppWindow(QtWidgets.QMainWindow):
         self.listMenu.show()
 
     def expinfo(self):
-        items = self.bMainList.selectedItems()
-        if len(items) != 1:
-            print("Need 1 item")
-            return
-        for citem in items:
-            cname = str(citem.text())
-            cexp = self.explist[cname]
-            listwin = ListWindow(cexp.filters, cexp.studyname)
-            res = listwin.exec_()
+        pass
+        # items = self.bMainList.selectedItems()
+        # if len(items) != 1:
+        #     print("Need 1 item")
+        #     return
+        # for citem in items:
+        #     cname = str(citem.text())
+        #     cexp = self.explist[cname]
+        #     # listwin = ListWindow(cexp.filters, cexp.studyname)
+        #     res = listwin.exec_()
 
     def menuRename(self):
         if len(self.bMainList.selectedItems()) > 1:
@@ -198,39 +209,43 @@ class AppWindow(QtWidgets.QMainWindow):
             self.removeexp(currentItemName)
 
     def menuSave(self):
-        cname = str(self.bMainList.currentItem().text())
-        fname, _ = QtWidgets.QFileDialog.getSaveFileName(self, 'Save experiment as pickle', '')
-        fname = str(fname)
-        fl = open(fname, 'w')
-        pickle.dump(self.explist[cname], fl, -1)
-        fl.close()
-        QtWidgets.QMessageBox.information(self, 'Analysis', 'experiment %s saved as pickle' % cname)
+        pass
+        # cname = str(self.bMainList.currentItem().text())
+        # fname, _ = QtWidgets.QFileDialog.getSaveFileName(self, 'Save experiment as pickle', '')
+        # fname = str(fname)
+        # fl = open(fname, 'w')
+        # pickle.dump(self.explist[cname], fl, -1)
+        # fl.close()
+        # QtWidgets.QMessageBox.information(self, 'Analysis', 'experiment %s saved as pickle' % cname)
 #       picklewrapper.save('test',currentItemName)
 
     def menuExport(self):
-        cname = str(self.bMainList.currentItem().text())
-        fname, _ = QtWidgets.QFileDialog.getSaveFileName(self, 'Save experiment as biom', '')
-        fname = str(fname)
-        hs.savetobiom(self.explist[cname], fname, 'hdf5')
-        QtWidgets.QMessageBox.information(self, 'Analysis', 'experiment %s saved as biom table and mapping file' % cname)
+        pass
+        # cname = str(self.bMainList.currentItem().text())
+        # fname, _ = QtWidgets.QFileDialog.getSaveFileName(self, 'Save experiment as biom', '')
+        # fname = str(fname)
+        # hs.savetobiom(self.explist[cname], fname, 'hdf5')
+        # QtWidgets.QMessageBox.information(self, 'Analysis', 'experiment %s saved as biom table and mapping file' % cname)
 #       cname=str(self.bMainList.currentItem().text())
 #       cm='global %s;%s=self.explist[cname]' % (cname,cname)
 #       exec(cm)
 #       hs.Debug(7,'exported',cname)
 
     def menuExportNoRenorm(self):
-        cname = str(self.bMainList.currentItem().text())
-        fname, _ = QtWidgets.QFileDialog.getSaveFileName(self, 'Save experiment as biom', '')
-        fname = str(fname)
-        hs.savetobiom(self.explist[cname], fname, 'hdf5', useorigreads=False)
-        QtWidgets.QMessageBox.information(self, 'Analysis', 'experiment %s saved as non-orig-reads biom table and mapping file' % cname)
+        pass
+        # cname = str(self.bMainList.currentItem().text())
+        # fname, _ = QtWidgets.QFileDialog.getSaveFileName(self, 'Save experiment as biom', '')
+        # fname = str(fname)
+        # hs.savetobiom(self.explist[cname], fname, 'hdf5', useorigreads=False)
+        # QtWidgets.QMessageBox.information(self, 'Analysis', 'experiment %s saved as non-orig-reads biom table and mapping file' % cname)
 
     def menuSaveCommands(self):
-        cname = str(self.bMainList.currentItem().text())
-        fname, _ = QtWidgets.QFileDialog.getSaveFileName(self, 'Save experiment python commands', '.py')
-        fname = str(fname)
-        hs.savecommands(self.explist[cname], fname)
-        QtWidgets.QMessageBox.information(self, 'Analysis', 'experiment %s commands saved to file:\n%s' % (cname, fname))
+        pass
+        # cname = str(self.bMainList.currentItem().text())
+        # fname, _ = QtWidgets.QFileDialog.getSaveFileName(self, 'Save experiment python commands', '.py')
+        # fname = str(fname)
+        # hs.savecommands(self.explist[cname], fname)
+        # QtWidgets.QMessageBox.information(self, 'Analysis', 'experiment %s commands saved to file:\n%s' % (cname, fname))
 
     def addexp(self, expdat):
         '''Add a new experiment to the list of experiments

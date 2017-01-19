@@ -3,7 +3,7 @@ from logging import getLogger
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
-from PyQt5 import QtCore, QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import (QMainWindow, QHBoxLayout, QVBoxLayout,
                              QSizePolicy, QWidget, QPushButton, QLabel, QListWidget, QSplitter,
                              QFrame, QComboBox, QScrollArea, QListWidgetItem)
@@ -141,7 +141,7 @@ class ApplicationWindow(QMainWindow):
         userside.addLayout(lbox_reads)
         # buttons
         lbox_buttons = QHBoxLayout()
-        self.w_sequence = QPushButton(text='Sequence')
+        self.w_sequence = QPushButton(text='Copy Seq')
         lbox_buttons.addWidget(self.w_sequence)
         self.w_info = QPushButton(text='Info')
         lbox_buttons.addWidget(self.w_info)
@@ -151,6 +151,9 @@ class ApplicationWindow(QMainWindow):
         # db annotations list
         self.w_dblist = QListWidget()
         userside.addWidget(self.w_dblist)
+
+        self.w_save_fasta = QPushButton(text='Save Seqs')
+        userside.addWidget(self.w_save_fasta)
 
         layout = QHBoxLayout(self.main_widget)
         heatmap = MyMplCanvas(self.main_widget, width=5, height=4, dpi=100)
@@ -176,6 +179,7 @@ class ApplicationWindow(QMainWindow):
         # link events to gui
         self.w_annotate.clicked.connect(self.annotate)
         self.w_sequence.clicked.connect(self.sequence)
+        self.w_save_fasta.clicked.connect(self.save_fasta)
 
         self.main_widget.setFocus()
         self.setCentralWidget(self.main_widget)
@@ -193,14 +197,31 @@ class ApplicationWindow(QMainWindow):
         clipboard = QApplication.clipboard()
         clipboard.setText(cseq)
 
+    def save_fasta(self):
+        seqs = self.get_selected_seqs()
+        filename, _ = QtWidgets.QFileDialog.getSaveFileName(self, caption='Save selected seqs to fasta')
+        self.gui.exp.save_fasta(str(filename), seqs)
+
     def annotate(self):
         '''Add database annotation to selected features
         '''
         from calour.annotation import annotate_bacteria_gui
 
         # get the sequences of the selection
+        seqs = self.get_selected_seqs()
+        annotate_bacteria_gui(seqs, self.gui.exp)
+
+    def get_selected_seqs(self):
+        '''Get the list of selected sequences for the gui
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        seqs : list of str sequences ('ACGT')
+        '''
         seqs = []
         for cseqpos in self.gui.selected_features.keys():
             seqs.append(self.gui.exp.feature_metadata.index[cseqpos])
-
-        annotate_bacteria_gui(seqs, self.gui.exp)
+        return seqs

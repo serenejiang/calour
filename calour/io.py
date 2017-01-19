@@ -255,16 +255,16 @@ def save_fasta(exp, f, seqs=None):
     else:
         logger.debug('no taxonomy field in experiment. saving without taxonomy')
         add_taxonomy = False
-    with open(f,'w') as fasta_file:
+    with open(f, 'w') as fasta_file:
         for cseq in seqs:
-            if cseq not in exp.feature_metadata:
+            if cseq not in exp.feature_metadata.index:
                 num_skipped += 1
                 continue
             if add_taxonomy:
                 cheader = exp.feature_metadata['taxonomy'][cseq]
             else:
                 cheader = cseq
-        fasta_file.write('>%s\n%s\n' % (cheader,cseq))
+            fasta_file.write('>%s\n%s\n' % (cheader, cseq))
     logger.debug('wrote fasta file with %d sequences. %d sequences skipped' % (len(seqs)-num_skipped, num_skipped))
 
 
