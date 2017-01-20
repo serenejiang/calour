@@ -62,6 +62,7 @@ class AppWindow(QtWidgets.QMainWindow):
         self.add_action_button('feature', 'Filter min reads', self.feature_filter_min_reads)
         self.add_action_button('feature', 'Filter taxonomy', self.feature_filter_taxonomy)
         self.add_action_button('feature', 'Filter fasta', self.feature_filter_fasta)
+        self.add_action_button('feature', 'Sort Abundance', self.feature_sort_abundance)
 
         # load sample dataset for debugging
         exp = ca.read_taxa('/Users/amnon/Projects/centenarians/final.withtax.biom', '/Users/amnon/Projects/centenarians/map.txt')
@@ -225,8 +226,22 @@ class AppWindow(QtWidgets.QMainWindow):
         if res is None:
             return
         if res['new name'] == '':
-            res['new name'] = '%s-cluster-features-min-%d' % (expdat._studyname, res['min reads'])
-        newexp = cah.cluster_features(expdat, minreads=res['min reads'])
+            res['new name'] = '%s-cluster-fasta-%s' % (expdat._studyname, res['Fasta File'])
+        newexp = cah.filter_fasta(expdat, filename=res['Fasta File'], negate=res['Negate'])
+        newexp._studyname = res['new name']
+        self.addexp(newexp)
+
+    def feature_sort_abundance(self):
+        expdat = self.get_exp_from_selection()
+        sort_field_vals = ['<none>']+list(expdat.sample_metadata.columns)
+        res = dialog([{'type': 'label', 'label': 'Sort features by abundance'},
+                      {'type': 'combo', 'label': 'Field', 'items': sort_field_vals},
+                      {'type': 'string', 'label': 'new name'}], expdat=expdat)
+        if res is None:
+            return
+        if res['new name'] == '':
+            res['new name'] = '%s-sort-abundance'
+        newexp = cah.filter_fasta(expdat, filename=res['Fasta File'], negate=res['Negate'])
         newexp._studyname = res['new name']
         self.addexp(newexp)
 
@@ -536,10 +551,9 @@ def dialog(items, expdat=None,  title=None):
 
         def file_button_click(self, widget):
             fname, _x = QtWidgets.QFileDialog.getOpenFileName(self, 'Open fasta file')
-            print(fname)
-            print(_x)
             fname = str(fname)
-            widget.setText(fname)
+            if fname != '':
+                widget.setText(fname)
 
         def get_output(self, items):
             output = {}
@@ -555,6 +569,8 @@ def dialog(items, expdat=None,  title=None):
                     output['field'] = str(self.widgets['field'].currentText())
                 elif citem['type'] == 'value':
                     output['value'] = str(self.widgets['value'].text())
+                elif citem['type'] == 'file':
+                    output[cname] = str(self.widgets[cname].text())
                 elif citem['type'] == 'bool':
                     output[cname] = self.widgets[cname].checkState() > 0
             return output
