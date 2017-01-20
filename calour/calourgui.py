@@ -22,6 +22,7 @@ from PyQt5.QtWidgets import (QHBoxLayout, QVBoxLayout,
 from PyQt5.QtWidgets import QDialog, QDialogButtonBox
 
 import calour as ca
+import calour.cahelper as cah
 
 logger = getLogger(__name__)
 
@@ -51,10 +52,16 @@ class AppWindow(QtWidgets.QMainWindow):
             self.actions[caction] = {}
 
         self.add_action_button('sample', 'barvaz', self.test)
-        self.add_action_button('sample', 'Sort', self.sort_samples)
-        self.add_action_button('sample', 'Filter', self.filter_samples)
-        self.add_action_button('sample', 'Filter min reads', self.filter_min_reads)
-        self.add_action_button('sample', 'Cluster', self.cluster_samples)
+        self.add_action_button('sample', 'Sort', self.sample_sort_samples)
+        self.add_action_button('sample', 'Filter', self.sample_filter_samples)
+        self.add_action_button('sample', 'Cluster', self.sample_cluster_samples)
+        self.add_action_button('sample', 'Join fields', self.sample_join_fields)
+        self.add_action_button('sample', 'Filter orig. reads', self.sample_filter_orig_reads)
+
+        self.add_action_button('feature', 'Cluster', self.feature_cluster)
+        self.add_action_button('feature', 'Filter min reads', self.feature_filter_min_reads)
+        self.add_action_button('feature', 'Filter taxonomy', self.feature_filter_taxonomy)
+        self.add_action_button('feature', 'Filter fasta', self.feature_filter_fasta)
 
         # load sample dataset for debugging
         exp = ca.read_taxa('/Users/amnon/Projects/centenarians/final.withtax.biom', '/Users/amnon/Projects/centenarians/map.txt')
@@ -103,46 +110,124 @@ class AppWindow(QtWidgets.QMainWindow):
             newexp = expdat
         newexp.plot(gui='qt5', sample_field=field)
 
-    def sort_samples(self):
+    def sample_sort_samples(self):
         expdat = self.get_exp_from_selection()
         res = dialog([{'type': 'label', 'label': 'Sort Samples'},
                       {'type': 'field', 'label': 'Field'},
-                      {'type': 'string', 'label': 'new name', 'default': expdat._studyname + '-sort-samples'}], expdat=expdat)
+                      {'type': 'string', 'label': 'new name'}], expdat=expdat)
         if res is None:
             return
+        if res['new name'] == '':
+            res['new name'] = '%s-sort-%s' % (expdat._studyname, res['field'])
         newexp = expdat.sort_by_metadata(res['field'], axis=0)
         newexp._studyname = res['new name']
         self.addexp(newexp)
 
-    def cluster_samples(self):
+    def sample_cluster_samples(self):
         expdat = self.get_exp_from_selection()
         newexp = expdat.cluster_data(axis=1)
         newexp._studyname = newexp._studyname + '-cluster-samples'
         self.addexp(newexp)
 
-    def filter_min_reads(self):
-        expdat = self.get_exp_from_selection()
-        res = dialog([{'type': 'label', 'label': 'Filter minimal reads per sample'},
-                      {'type': 'int', 'label': 'min reads', 'max': 50000},
-                      {'type': 'string', 'label': 'new name', 'default': expdat._studyname+'-filter-min-reads'}], expdat=expdat)
-        if res is None:
-            return
-        newexp = expdat.filter_by_data('sum_abundance', axis=0, cutoff=res['min reads'])
-        newexp._studyname = res['new name']
-        self.addexp(newexp)
-
-    def filter_samples(self):
+    def sample_filter_samples(self):
         expdat = self.get_exp_from_selection()
         logger.debug('filter samples for study: %s' % expdat._studyname)
         res = dialog([{'type': 'label', 'label': 'Filter Samples'},
                       {'type': 'field', 'label': 'Field'},
                       {'type': 'value', 'label': 'vals'},
                       {'type': 'bool', 'label': 'negate'},
-                      {'type': 'string', 'label': 'new name', 'default': expdat._studyname + '-filter-samples'}], expdat=expdat)
+                      {'type': 'string', 'label': 'new name'}], expdat=expdat)
         if res is None:
             return
-        logger.debug('filtering field %s vlaue %s negate %s' % (res['field'], res['value'], res['negate']))
+        if res['new name'] == '':
+            if res['negate']:
+                res['new name'] = '%s-%s-not-%s' % (expdat._studyname, res['field'], res['value'])
+            else:
+                res['new name'] = '%s-%s-%s' % (expdat._studyname, res['field'], res['value'])
         newexp = expdat.filter_by_metadata(res['field'], res['value'], negate=res['negate'])
+        newexp._studyname = res['new name']
+        self.addexp(newexp)
+
+    def sample_join_fields(self):
+        expdat = self.get_exp_from_selection()
+        res = dialog([{'type': 'label', 'label': 'Join Fields'},
+                      {'type': 'combo', 'label': 'Field1', 'items': expdat.sample_metadata.columns},
+                      {'type': 'combo', 'label': 'Field2', 'items': expdat.sample_metadata.columns},
+                      {'type': 'string', 'label': 'new name'}], expdat=expdat)
+        if res is None:
+            return
+        if res['new name'] == '':
+            res['new name'] = '%s-join-%s-%s' % (expdat._studyname, res['Field1'], res['Field2'])
+        newexp = cah.join_fields(expdat, field1=res['Field1'], field2=res['Field2'])
+        newexp._studyname = res['new name']
+        self.addexp(newexp)
+
+    def sample_filter_orig_reads(self):
+        expdat = self.get_exp_from_selection()
+        res = dialog([{'type': 'label', 'label': 'Filter Original Reads'},
+                      {'type': 'int', 'label': 'Orig Reads', 'max': 100000, 'default': 10000},
+                      {'type': 'string', 'label': 'new name'}], expdat=expdat)
+        if res is None:
+            return
+        if res['new name'] == '':
+            res['new name'] = '%s-min-%d' % (expdat._studyname, res['Orig Reads'])
+        newexp = cah.filter_orig_reads(expdat, minreads=res['Orig Reads'])
+        newexp._studyname = res['new name']
+        self.addexp(newexp)
+
+    def feature_filter_min_reads(self):
+        expdat = self.get_exp_from_selection()
+        res = dialog([{'type': 'label', 'label': 'Filter minimal reads per feature'},
+                      {'type': 'int', 'label': 'min reads', 'max': 50000, 'default': 10},
+                      {'type': 'string', 'label': 'new name'}], expdat=expdat)
+        if res is None:
+            return
+        if res['new name'] == '':
+            res['new name'] = '%s-minreads-%d' % (expdat._studyname, res['min reads'])
+        newexp = cah.filter_min_reads(expdat, minreads=res['min reads'])
+        newexp._studyname = res['new name']
+        self.addexp(newexp)
+
+    def feature_filter_taxonomy(self):
+        expdat = self.get_exp_from_selection()
+        res = dialog([{'type': 'label', 'label': 'Filter Taxonomy'},
+                      {'type': 'string', 'label': 'Taxonomy'},
+                      {'type': 'bool', 'label': 'Exact'},
+                      {'type': 'bool', 'label': 'Negate'},
+                      {'type': 'string', 'label': 'new name'}], expdat=expdat)
+        if res is None:
+            return
+        if res['new name'] == '':
+            res['new name'] = '%s-tax-%s' % (expdat._studyname, res['Taxonomy'])
+        newexp = cah.filter_taxonomy(expdat, res['Taxonomy'], negate=res['Negate'], exact=res['Exact'])
+        newexp._studyname = res['new name']
+        self.addexp(newexp)
+
+    def feature_cluster(self):
+        expdat = self.get_exp_from_selection()
+        res = dialog([{'type': 'label', 'label': 'Cluster Features'},
+                      {'type': 'int', 'label': 'min reads', 'max': 50000, 'default': 10},
+                      {'type': 'string', 'label': 'new name'}], expdat=expdat)
+        if res is None:
+            return
+        if res['new name'] == '':
+            res['new name'] = '%s-cluster-features-min-%d' % (expdat._studyname, res['min reads'])
+        newexp = cah.cluster_features(expdat, minreads=res['min reads'])
+        newexp._studyname = res['new name']
+        self.addexp(newexp)
+
+    def feature_filter_fasta(self):
+        expdat = self.get_exp_from_selection()
+        res = dialog([{'type': 'label', 'label': 'Filter Fasta'},
+                      {'type': 'filename', 'label': 'Fasta File'},
+                      {'type': 'bool', 'label': 'Negate'},
+                      {'type': 'string', 'label': 'new name'}], expdat=expdat)
+        if res is None:
+            return
+        if res['new name'] == '':
+            res['new name'] = '%s-cluster-features-min-%d' % (expdat._studyname, res['min reads'])
+        newexp = cah.cluster_features(expdat, minreads=res['min reads'])
+        newexp._studyname = res['new name']
         self.addexp(newexp)
 
     def test(self):
@@ -152,7 +237,13 @@ class AppWindow(QtWidgets.QMainWindow):
 
     def add_action_button(self, group, name, function):
         self.actions[group][name] = QPushButton(text=name)
-        self.wSample.addWidget(self.actions[group][name])
+        if group == 'sample':
+            self.wSample.addWidget(self.actions[group][name])
+        elif group == 'feature':
+            self.wFeature.addWidget(self.actions[group][name])
+        elif group == 'analysis':
+            self.wAnalysis.addWidget(self.actions[group][name])
+
         self.actions[group][name].clicked.connect(function)
 
     def listItemRightClicked(self, QPos):
@@ -383,9 +474,11 @@ def dialog(items, expdat=None,  title=None):
                     widget = QLineEdit(citem.get('default'))
                     self.add(widget, label=citem.get('label'), name=citem.get('label'))
                 elif citem['type'] == 'int':
-                    widget = QSpinBox(citem.get('default'))
+                    widget = QSpinBox()
                     if 'max' in citem:
                         widget.setMaximum(citem['max'])
+                    if 'default' in citem:
+                        widget.setValue(citem.get('default'))
                     self.add(widget, label=citem.get('label'), name=citem.get('label'))
                 elif citem['type'] == 'combo':
                     widget = QComboBox()
@@ -404,6 +497,9 @@ def dialog(items, expdat=None,  title=None):
                         return None
                     widget = QLineEdit()
                     self.add(widget, label=citem.get('label'), name='value', addbutton=True)
+                elif citem['type'] == 'filename':
+                    widget = QLineEdit()
+                    self.add(widget, label=citem.get('label'), name='value', addfilebutton=True)
                 elif citem['type'] == 'bool':
                     widget = QCheckBox()
                     self.add(widget, label=citem.get('label'), name=citem.get('label'))
@@ -415,7 +511,7 @@ def dialog(items, expdat=None,  title=None):
 
             self.layout.addWidget(buttonBox)
 
-        def add(self, widget, name=None, label=None, addbutton=False):
+        def add(self, widget, name=None, label=None, addbutton=False, addfilebutton=False):
             hlayout = QHBoxLayout()
             if label is not None:
                 label_widget = QLabel(label)
@@ -425,6 +521,10 @@ def dialog(items, expdat=None,  title=None):
                 bwidget = QPushButton(text='...')
                 bwidget.clicked.connect(self.field_vals_click)
                 hlayout.addWidget(bwidget)
+            if addfilebutton:
+                bwidget = QPushButton(text='...')
+                bwidget.clicked.connect(lambda: self.file_button_click(widget))
+                hlayout.addWidget(bwidget)
             self.layout.addLayout(hlayout)
             self.widgets[name] = widget
 
@@ -433,6 +533,13 @@ def dialog(items, expdat=None,  title=None):
             val, ok = QtWidgets.QInputDialog.getItem(self, 'Select value', 'Field=%s' % cfield, list(set(self._expdat.sample_metadata[cfield].astype(str))))
             if ok:
                 self.widgets['value'].setText(val)
+
+        def file_button_click(self, widget):
+            fname, _x = QtWidgets.QFileDialog.getOpenFileName(self, 'Open fasta file')
+            print(fname)
+            print(_x)
+            fname = str(fname)
+            widget.setText(fname)
 
         def get_output(self, items):
             output = {}

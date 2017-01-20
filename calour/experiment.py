@@ -200,7 +200,7 @@ class Experiment:
         ----------
         new_order : Iterable of int
             the order of new indices
-        axis : 0 or 1
+        axis : 0 for samples or 1 for features
         inplace : bool
             reorder in place.
 

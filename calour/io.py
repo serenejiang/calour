@@ -92,7 +92,8 @@ def read_taxa(data_file, sample_metadata_file=None,
               filter_orig_reads=1000, normalize=True, **kwargs):
     '''Load an amplicon experiment.
 
-    Fix taxonomy and normalize if needed. This is a convenience function of read()
+    Fix taxonomy and normalize if needed. This is a convenience function of read().
+    Also convert feature index (sequences) to upper case
 
     Parameters
     ----------
@@ -106,6 +107,9 @@ def read_taxa(data_file, sample_metadata_file=None,
     exp : Experiment
     '''
     exp = read(data_file, sample_metadata_file, **kwargs)
+
+    exp.feature_metadata.index = exp.feature_metadata.index.str.upper()
+
     if 'taxonomy' in exp.feature_metadata.columns:
         exp.feature_metadata['taxonomy'] = _get_taxonomy_string(exp)
 
