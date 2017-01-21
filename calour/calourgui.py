@@ -233,15 +233,15 @@ class AppWindow(QtWidgets.QMainWindow):
 
     def feature_sort_abundance(self):
         expdat = self.get_exp_from_selection()
-        sort_field_vals = ['<none>']+list(expdat.sample_metadata.columns)
         res = dialog([{'type': 'label', 'label': 'Sort features by abundance'},
-                      {'type': 'combo', 'label': 'Field', 'items': sort_field_vals},
+                      {'type': 'field', 'label': 'Field', 'withnone': True},
+                      {'type': 'value', 'label': 'vals'},
                       {'type': 'string', 'label': 'new name'}], expdat=expdat)
         if res is None:
             return
         if res['new name'] == '':
-            res['new name'] = '%s-sort-abundance'
-        newexp = cah.filter_fasta(expdat, filename=res['Fasta File'], negate=res['Negate'])
+            res['new name'] = '%s-sort-abundance' % expdat._studyname
+        newexp = cah.sort_freq(expdat, field=res['field'], value=res['value'])
         newexp._studyname = res['new name']
         self.addexp(newexp)
 
@@ -267,17 +267,13 @@ class AppWindow(QtWidgets.QMainWindow):
         menurename.triggered.connect(self.menuRename)
         menuremove = self.listMenu.addAction("Delete")
         menuremove.triggered.connect(self.menuRemove)
-        menusave = self.listMenu.addAction("Save (pickle) Item")
+        menusave = self.listMenu.addAction("Save biom")
         menusave.triggered.connect(self.menuSave)
-        menuexport = self.listMenu.addAction("Save (biom) Item")
-        menuexport.triggered.connect(self.menuExport)
-        menuexportnorenorm = self.listMenu.addAction("Save (biom relative abund) Item")
-        menuexportnorenorm.triggered.connect(self.menuExportNoRenorm)
         menuinfo = self.listMenu.addAction("Info")
         menuinfo.triggered.connect(self.expinfo)
-        parentPosition = self.wExperiments.mapToGlobal(QtCore.QPoint(0, 0))
         menusavecommands = self.listMenu.addAction("Save commands")
         menusavecommands.triggered.connect(self.menuSaveCommands)
+        parentPosition = self.wExperiments.mapToGlobal(QtCore.QPoint(0, 0))
         self.listMenu.move(parentPosition + QPos)
         self.listMenu.show()
 
@@ -294,57 +290,32 @@ class AppWindow(QtWidgets.QMainWindow):
         #     res = listwin.exec_()
 
     def menuRename(self):
-        if len(self.bMainList.selectedItems()) > 1:
-            return
-        for citem in self.bMainList.selectedItems():
-            cname = str(citem.text())
-            cexp = self.explist[cname]
-            val, ok = QtWidgets.QInputDialog.getText(self, 'Rename experiment', 'old name=%s' % cname)
-            if ok:
-                self.removeexp(cname)
-                cexp.studyname = val
-                self.addexp(cexp)
+        expdat = self.get_exp_from_selection()
+        val, ok = QtWidgets.QInputDialog.getText(self, 'Rename experiment', 'old name=%s' % expdat._studyname)
+        if ok:
+            self.removeexp(expdat)
+            expdat._studyname = val
+            self.addexp(expdat)
 
     def menuRemove(self):
-        if len(self.bMainList.selectedItems()) > 1:
-            if QtWidgets.QMessageBox.warning(self, "Remove samples?", "Remove %d samples?" % len(self.bMainList.selectedItems()),
+        if len(self.wExperiments.selectedItems()) > 1:
+            if QtWidgets.QMessageBox.warning(self, "Remove experiments?", "Remove %d experiments?" % len(self.wExperiments.selectedItems()),
                                              QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No) == QtWidgets.QMessageBox.No:
                 return
-        for currentItemName in self.bMainList.selectedItems():
+        for currentItemName in self.wExperiments.selectedItems():
             currentItemName = str(currentItemName.text())
-#       currentItemName=str(self.bMainList.currentItem().text())
             self.removeexp(currentItemName)
 
     def menuSave(self):
-        pass
-        # cname = str(self.bMainList.currentItem().text())
-        # fname, _ = QtWidgets.QFileDialog.getSaveFileName(self, 'Save experiment as pickle', '')
-        # fname = str(fname)
-        # fl = open(fname, 'w')
-        # pickle.dump(self.explist[cname], fl, -1)
-        # fl.close()
-        # QtWidgets.QMessageBox.information(self, 'Analysis', 'experiment %s saved as pickle' % cname)
-#       picklewrapper.save('test',currentItemName)
-
-    def menuExport(self):
-        pass
-        # cname = str(self.bMainList.currentItem().text())
-        # fname, _ = QtWidgets.QFileDialog.getSaveFileName(self, 'Save experiment as biom', '')
-        # fname = str(fname)
-        # hs.savetobiom(self.explist[cname], fname, 'hdf5')
-        # QtWidgets.QMessageBox.information(self, 'Analysis', 'experiment %s saved as biom table and mapping file' % cname)
-#       cname=str(self.bMainList.currentItem().text())
-#       cm='global %s;%s=self.explist[cname]' % (cname,cname)
-#       exec(cm)
-#       hs.Debug(7,'exported',cname)
-
-    def menuExportNoRenorm(self):
-        pass
-        # cname = str(self.bMainList.currentItem().text())
-        # fname, _ = QtWidgets.QFileDialog.getSaveFileName(self, 'Save experiment as biom', '')
-        # fname = str(fname)
-        # hs.savetobiom(self.explist[cname], fname, 'hdf5', useorigreads=False)
-        # QtWidgets.QMessageBox.information(self, 'Analysis', 'experiment %s saved as non-orig-reads biom table and mapping file' % cname)
+        expdat = self.get_exp_from_selection()
+        fname, _ = QtWidgets.QFileDialog.getSaveFileName(self, 'Save experiment')
+        fname = str(fname)
+        if fname == '':
+            return
+        print('saving')
+        # TODO: change to hdf5 once biom bug is solved
+        expdat.save_biom(fname, fmt='json')
+        print('done')
 
     def menuSaveCommands(self):
         pass
@@ -373,31 +344,22 @@ class AppWindow(QtWidgets.QMainWindow):
             cnum += 1
         expdat._studyname = expname
         expdname = '%s (%s-S, %s-F)' % (expname, expdat.get_num_samples(), expdat.get_num_features())
+        expdat._displayname = expdname
         self._explist[expdname] = expdat
         self.wExperiments.addItem(expdname)
         self.wExperiments.clearSelection()
         self.wExperiments.setCurrentRow(self.wExperiments.count()-1)
         logger.debug('experiment %s added' % expname)
 
-    def replaceexp(self, expdat):
-        """
-        replace an existing experiment with new values
-        """
-        expname = expdat.studyname
-        self.explist[expname] = expdat
-        items = self.bMainList.findItems(expname, QtCore.Qt.MatchExactly)
-        for item in items:
-            self.bMainList.takeItem(self.bMainList.row(item))
-            self.bMainList.addItem(expname)
-
-    def removeexp(self, expname):
+    def removeexp(self, exp):
         """
         remove an experiment from the list (and clear)
         """
-        del self.explist[expname]
-        items = self.bMainList.findItems(expname, QtCore.Qt.MatchExactly)
+        expdname = exp._displayname
+        del self._explist[expdname]
+        items = self.wExperiments.findItems(expdname, QtCore.Qt.MatchExactly)
         for item in items:
-            self.bMainList.takeItem(self.bMainList.row(item))
+            self.wExperiments.takeItem(self.wExperiments.row(item))
 
     def load(self):
         win = LoadWindow()
@@ -405,6 +367,8 @@ class AppWindow(QtWidgets.QMainWindow):
         if res == QtWidgets.QDialog.Accepted:
             tablefname = str(win.wTableFile.text())
             mapfname = str(win.wMapFile.text())
+            if mapfname == '':
+                mapfname = None
             expname = str(win.wNewName.text())
             exptype = str(win.wType.currentText())
             if exptype == 'Amplicon':
@@ -504,7 +468,11 @@ def dialog(items, expdat=None,  title=None):
                         logger.warn('Experiment is empty for dialog %s' % title)
                         return None
                     widget = QComboBox()
-                    widget.addItems(expdat.sample_metadata.columns.values)
+                    if citem.get('withnone', False):
+                        items = ['<none>'] + list(expdat.sample_metadata.columns.values)
+                    else:
+                        items = expdat.sample_metadata.columns.values
+                    widget.addItems(items)
                     self.add(widget, label=citem.get('label'), name='field')
                 elif citem['type'] == 'value':
                     if expdat is None:
@@ -545,6 +513,8 @@ def dialog(items, expdat=None,  title=None):
 
         def field_vals_click(self):
             cfield = str(self.widgets['field'].currentText())
+            if cfield not in self._expdat.sample_metadata.columns:
+                return
             val, ok = QtWidgets.QInputDialog.getItem(self, 'Select value', 'Field=%s' % cfield, list(set(self._expdat.sample_metadata[cfield].astype(str))))
             if ok:
                 self.widgets['value'].setText(val)
@@ -567,6 +537,8 @@ def dialog(items, expdat=None,  title=None):
                     output[cname] = str(self.widgets[cname].currentText())
                 elif citem['type'] == 'field':
                     output['field'] = str(self.widgets['field'].currentText())
+                    if output['field'] == '<none>':
+                        output['field'] = None
                 elif citem['type'] == 'value':
                     output['value'] = str(self.widgets['value'].text())
                 elif citem['type'] == 'file':

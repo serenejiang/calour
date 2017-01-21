@@ -293,7 +293,7 @@ def _create_biom_table_from_exp(exp, addtax=True):
     table = biom.table.Table(exp.data.transpose(), features, samples, type="OTU table")
     # and add metabolite name as taxonomy:
     if addtax:
-        taxdict = exp.feature_metadata.T.to_dict()
+        taxdict = exp.feature_metadata.to_dict('index')
         table.add_metadata(taxdict, axis='observation')
         # metadata = table.metadata(axis='observation')
         # print(metadata)
