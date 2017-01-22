@@ -358,9 +358,32 @@ class DBBact:
 
         Returns
         -------
+        sequence_annotations : dict of (sequence, list of terms)
+            key is sequence, value is list of ontology terms present in the bacteria
         '''
         rdata = {}
-        rdata['sequences'] = sequences
+        rdata['sequences'] = list(sequences)
         res = self._get('sequences/get_fast_annotations', rdata)
+        if res.status_code != 200:
+            logger.warn('error getting fast annotations for sequence list')
+            return None
+        res = res.json()
 
-        return res
+        sequence_annotations = {}
+        for cseq in sequences:
+            sequence_annotations[cseq] = []
+
+        for cseqannotation in res['seqannotations']:
+            cpos = cseqannotation[0]
+            # need str since json dict is always string
+            cseq = sequences[cpos]
+            for cannotation in cseqannotation[1]:
+                for k, v in res['annotations'][str(cannotation)]['parents'].items():
+                    if k == 'high' or k == 'all':
+                        for cterm in v:
+                            sequence_annotations[cseq].append(cterm)
+                    elif k == 'low':
+                        for cterm in v:
+                            sequence_annotations[cseq].append('-' + cterm)
+
+        return sequence_annotations

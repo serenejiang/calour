@@ -439,10 +439,7 @@ def dialog(items, expdat=None,  title=None):
                 self.setWindowTitle(title)
 
             self.main_widget = QWidget(self)
-            # self.layout = QVBoxLayout(self.main_widget)
             self.layout = QVBoxLayout(self)
-            # self.main_widget.setFocus()
-            # self.setSizePolicy(QSizePolicy(QSizePolicy.Expanding,QSizePolicy.Expanding))
 
             self.widgets = {}
             for citem in items:

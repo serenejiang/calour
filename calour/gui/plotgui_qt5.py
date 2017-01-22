@@ -6,11 +6,12 @@ from matplotlib.figure import Figure
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import (QMainWindow, QHBoxLayout, QVBoxLayout,
                              QSizePolicy, QWidget, QPushButton, QLabel, QListWidget, QSplitter,
-                             QFrame, QComboBox, QScrollArea, QListWidgetItem)
+                             QFrame, QComboBox, QScrollArea, QListWidgetItem, QDialogButtonBox)
 from PyQt5.QtWidgets import QApplication
 
 from calour.dbbact import DBBact
 from calour.gui.plotgui import PlotGUI
+import calour.analysis
 
 
 logger = getLogger(__name__)
@@ -152,8 +153,12 @@ class ApplicationWindow(QMainWindow):
         self.w_dblist = QListWidget()
         userside.addWidget(self.w_dblist)
 
+        lbox_buttons_bottom = QHBoxLayout()
         self.w_save_fasta = QPushButton(text='Save Seqs')
-        userside.addWidget(self.w_save_fasta)
+        lbox_buttons_bottom.addWidget(self.w_save_fasta)
+        self.w_enrichment = QPushButton(text='Enrichment')
+        lbox_buttons_bottom.addWidget(self.w_enrichment)
+        userside.addLayout(lbox_buttons_bottom)
 
         layout = QHBoxLayout(self.main_widget)
         heatmap = MyMplCanvas(self.main_widget, width=5, height=4, dpi=100)
@@ -180,6 +185,7 @@ class ApplicationWindow(QMainWindow):
         self.w_annotate.clicked.connect(self.annotate)
         self.w_sequence.clicked.connect(self.sequence)
         self.w_save_fasta.clicked.connect(self.save_fasta)
+        self.w_enrichment.clicked.connect(self.enrichment)
 
         self.main_widget.setFocus()
         self.setCentralWidget(self.main_widget)
@@ -201,6 +207,27 @@ class ApplicationWindow(QMainWindow):
         seqs = self.get_selected_seqs()
         filename, _ = QtWidgets.QFileDialog.getSaveFileName(self, caption='Save selected seqs to fasta')
         self.gui.exp.save_fasta(str(filename), seqs)
+
+    def enrichment(self):
+        group1_seqs = self.get_selected_seqs()
+        allseqs = self.gui.exp.feature_metadata.index.values
+        group2_seqs = list(set(allseqs).difference(set(group1_seqs)))
+        logger.debug('Getting fast experiment annotations for %d sequences' % len(allseqs))
+        dbb = DBBact()
+        annotations = dbb.get_seq_list_fast_annotations(allseqs)
+        res = calour.analysis.enrichment2(group1_seqs, group2_seqs, annotations)
+        logger.debug('Got %d enriched terms' % len(res))
+        if len(res) == 0:
+            QtWidgets.QMessageBox.information(self, "No enriched terms found", "No enriched annotations found when comparing\n%d selected sequences to %d other sequences" % (len(group1_seqs), len(group2_seqs)))
+            return
+        listwin = SListWindow(listname='enriched ontology terms')
+        for cres in res:
+            if cres['group1'] > cres['group2']:
+                ccolor = 'blue'
+            else:
+                ccolor = 'red'
+            listwin.add_item('%s - %f (selected %d, other %d) ' % (cres['description'], cres['pval'], cres['group1'], cres['group2']), color=ccolor)
+        listwin.exec_()
 
     def annotate(self):
         '''Add database annotation to selected features
@@ -225,3 +252,56 @@ class ApplicationWindow(QMainWindow):
         for cseqpos in self.gui.selected_features.keys():
             seqs.append(self.gui.exp.feature_metadata.index[cseqpos])
         return seqs
+
+
+class SListWindow(QtWidgets.QDialog):
+    def __init__(self, listdata=[], listname=None):
+        '''Create a list window with items in the list and the listname as specified
+
+        Parameters
+        listdata: list of str (optional)
+            the data to show in the list
+        listname: str (optional)
+            name to display above the list
+        '''
+        super(SListWindow, self).__init__()
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+        if listname is not None:
+            self.setWindowTitle(listname)
+
+        self.layout = QVBoxLayout(self)
+
+        self.w_list = QListWidget()
+        self.layout.addWidget(self.w_list)
+
+        buttonBox = QDialogButtonBox(QDialogButtonBox.Ok)
+        buttonBox.accepted.connect(self.accept)
+        self.layout.addWidget(buttonBox)
+
+        for citem in listdata:
+            self.w_list.addItem(citem)
+
+        self.show()
+        self.adjustSize()
+
+    def add_item(self, text, color='black'):
+        '''Add an item to the list
+
+        Parameters:
+        text : str
+            the string to add
+        color : str (optional)
+            the color of the text to add
+        '''
+        item = QtWidgets.QListWidgetItem()
+        item.setText(text)
+        if color == 'black':
+            ccolor = QtGui.QColor(0, 0, 0)
+        elif color == 'red':
+            ccolor = QtGui.QColor(155, 0, 0)
+        elif color == 'blue':
+            ccolor = QtGui.QColor(0, 0, 155)
+        elif color == 'green':
+            ccolor = QtGui.QColor(0, 155, 0)
+        item.setForeground(ccolor)
+        self.w_list.addItem(item)
