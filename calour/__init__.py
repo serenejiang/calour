@@ -13,6 +13,7 @@ from pkg_resources import resource_filename
 from calour.experiment import Experiment, add_functions
 from calour.io import read, read_taxa
 
+
 __credits__ = "https://github.com/biocore/calour/graphs/contributors"
 __version__ = "0.1.0.dev0"
 

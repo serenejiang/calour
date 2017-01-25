@@ -7,7 +7,6 @@ import numpy as np
 from scipy import stats
 from statsmodels.sandbox.stats.multicomp import multipletests
 
-
 import calour.pbfdr
 
 
@@ -82,8 +81,10 @@ def get_annotation_count(seqs, sequence_annotations):
 
     Parameters
     ----------
-    seqs : list of str sequences (ACGT)
-    sequence_annotations : dict of (sequence, list of ontology terms) (from dbbact.get_seq_list_fast_annotations() )
+    seqs : list of str
+        A list of DNA sequences
+    sequence_annotations : dict of (sequence, list of ontology terms)
+        from dbbact.get_seq_list_fast_annotations()
 
     Returns
     -------
@@ -108,8 +109,10 @@ def get_term_seqs(seqs, sequence_annotations):
 
     Parameters
     ----------
-    seqs : list of str sequences (ACGT)
-    sequence_annotations : dict of (sequence, list of ontology terms) (from dbbact.get_seq_list_fast_annotations() )
+    seqs : list of str
+        A list of DNA sequences
+    sequence_annotations : dict of (sequence, list of ontology terms)
+        from dbbact.get_seq_list_fast_annotations()
 
     Returns
     -------
@@ -146,9 +149,12 @@ def annotation_enrichment(seqs1, seqs2, sequence_annotations):
 
     Parameters
     ----------
-    seqs1 : list of str sequences (ACGT)
-    seqs2 : list of str sequences (ACGT)
-    sequence_annotations : dict of (sequence, list of annotationIDs) (from dbbact.get_seq_list_fast_annotations() )
+    seqs1 : list of str
+        A list of DNA sequences
+    seqs2 : list of str
+        A list of DNA sequences
+    sequence_annotations : dict of (sequence, list of annotationIDs)
+        from dbbact.get_seq_list_fast_annotations()
 
     Returns
     -------
@@ -216,9 +222,12 @@ def term_enrichment(seqs1, seqs2, sequence_terms):
 
     Parameters
     ----------
-    seqs1 : list of str sequences (ACGT)
-    seqs2 : list of str sequences (ACGT)
-    sequence_terms : dict of (sequence, list of ontology terms) (from dbbact.get_seq_list_fast_annotations() )
+    seqs1 : list of str
+        A list of DNA sequences
+    seqs2 : list of str
+        A list of DNA sequences
+    sequence_terms : dict of (sequence, list of ontology terms)
+        from dbbact.get_seq_list_fast_annotations()
 
     Returns
     -------

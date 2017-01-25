@@ -10,7 +10,7 @@ class PlotGUI_Jupyter(PlotGUI):
     We open the figure as a widget inside the qt5 window
     '''
     def __init__(self, *kargs, **kwargs):
-        PlotGUI.__init__(self, *kargs, **kwargs)
+        super.__init__(*kargs, **kwargs)
         self.databases = []
 
     def get_figure(self, newfig=None):

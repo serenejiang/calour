@@ -1,7 +1,7 @@
 import requests
 from logging import getLogger
 
-from .util import get_config_value
+from calour.util import get_config_value
 
 
 logger = getLogger(__name__)
@@ -32,7 +32,7 @@ class DBBact:
         Parameters
         ----------
         api : str
-            the location in the dbBact REST API to post the request to
+            the REST API address to post the request to
         rdata : dict
             parameters to pass to the dbBact REST API
 
@@ -54,7 +54,7 @@ class DBBact:
         Parameters
         ----------
         api : str
-            the location in the dbBact REST API to post the request to
+            the REST API address to post the request to
         rdata : dict
             parameters to pass to the dbBact REST API
 
@@ -75,11 +75,13 @@ class DBBact:
 
         Parameters
         ----------
-        sequence : str (ACGT)
+        sequence : str
+            The DNA sequence to get the annotations for
 
         Returns
         -------
-        curs : list of list of (curation dict,list of [Type,Value] of curation details)
+        annotations : list of list of (annotation dict,list of [Type,Value] of annotation details)
+            See dbBact sequences/get_annotations REST API documentation
         '''
         rdata = {}
         rdata['sequence'] = sequence
@@ -96,7 +98,8 @@ class DBBact:
 
         Parameters
         ----------
-        cann : dict (annotation)
+        cann : dict
+            items of the output of get_seq_annotations()
 
         Returns
         -------
@@ -146,8 +149,8 @@ class DBBact:
 
         Parameters
         ----------
-        sequence : str (ACGT)
-            the sequence to query the annotation strings about
+        sequence : str
+            the DNA sequence to query the annotation strings about
 
         Returns
         -------
@@ -310,8 +313,8 @@ class DBBact:
         ----------
         expid : int
             the experiment ID - the value of ExpID from Experiments table
-        sequences : list of ACGT
-            the sequences to curate
+        sequences : list of str
+            the list of DNA sequences to curate
         annotationtype : str
             the annotation type. can be:
             'COMMON' : the sequences are common in the samples (present in >0.5 of the samples)
@@ -378,8 +381,8 @@ class DBBact:
 
         Params
         ------
-        sequences : list of sequence str ('ACGT')
-            the sequences to get annotations for
+        sequences : list of str
+            The list of DNA sequences to get the annotations for
 
         Returns
         -------

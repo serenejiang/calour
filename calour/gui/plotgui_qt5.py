@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import (QMainWindow, QHBoxLayout, QVBoxLayout,
                              QFrame, QComboBox, QScrollArea, QListWidgetItem, QDialogButtonBox)
 from PyQt5.QtWidgets import QApplication
 
-from calour.dbbact import DBBact
+from calour.database.dbbact import DBBact
 from calour.gui.plotgui import PlotGUI
 import calour.analysis
 
@@ -22,7 +22,7 @@ class PlotGUI_QT5(PlotGUI):
     We open the figure as a widget inside the qt5 window
     '''
     def __init__(self, *kargs, **kwargs):
-        PlotGUI.__init__(self, *kargs, **kwargs)
+        super().__init__(*kargs, **kwargs)
         # self.dbbact = DBBact()
         # self.dbbact = DBSponge()
 
@@ -73,12 +73,19 @@ class PlotGUI_QT5(PlotGUI):
                 cinfo = [[{'annotationtype': 'not found'}, 'No annotation found in database %s' % cdatabase.get_name()]]
             info.extend(cinfo)
         # info = self.dbbact.get_seq_annotation_strings(sequence)
-        self.addtocdblist(info)
+        self.add_to_annotation_list(info)
 
-    def addtocdblist(self, info):
-        """
-        add to cdb list without clearing
-        """
+    def add_to_annotation_list(self, info):
+        '''Add a line to the annotation list
+        Does not erase previous lines
+
+        Parameters
+        ----------
+        info : list of (dict, string)
+            dict : contains the key 'annotationtype' and determines the annotation color
+            string : str
+                The string to add to the list
+        '''
         for cinfo in info:
             details = cinfo[0]
             newitem = QListWidgetItem(cinfo[1])
@@ -189,7 +196,7 @@ class ApplicationWindow(QMainWindow):
 
         # link events to gui
         self.w_annotate.clicked.connect(self.annotate)
-        self.w_sequence.clicked.connect(self.sequence)
+        self.w_sequence.clicked.connect(self.copy_sequence)
         self.w_save_fasta.clicked.connect(self.save_fasta)
         self.w_enrichment.clicked.connect(self.enrichment)
 
@@ -202,7 +209,7 @@ class ApplicationWindow(QMainWindow):
     def closeEvent(self, ce):
         self.fileQuit()
 
-    def sequence(self):
+    def copy_sequence(self):
         '''Copy the sequence to the clipboard
         '''
         cseq = self.gui.exp.feature_metadata.index[self.gui.last_select_feature]
