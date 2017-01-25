@@ -14,6 +14,7 @@ import calour.pbfdr
 logger = getLogger(__name__)
 
 
+# TODO: make nicer (need new code from Serene)
 def getpbfdr(exp, field, val1=None, val2=None, method='meandiff', transform='rankdata', numperm=1000, alpha=0.1, fdrmethod='pbfdr'):
     """
     test the differential expression between 2 groups (val1 and val2 in field field)
@@ -77,12 +78,12 @@ def getpbfdr(exp, field, val1=None, val2=None, method='meandiff', transform='ran
 
 
 def get_annotation_count(seqs, sequence_annotations):
-    '''Get dict of number of each annotation term in seqs
+    '''Get dict of number of each annotation term (from sequence_annotations) in seqs
 
     Parameters
     ----------
     seqs : list of str sequences (ACGT)
-    sequence_annotations : dict of (sequence, list of ontology terms)
+    sequence_annotations : dict of (sequence, list of ontology terms) (from dbbact.get_seq_list_fast_annotations() )
 
     Returns
     -------
@@ -108,7 +109,7 @@ def get_term_seqs(seqs, sequence_annotations):
     Parameters
     ----------
     seqs : list of str sequences (ACGT)
-    sequence_annotations : dict of (sequence, list of ontology terms)
+    sequence_annotations : dict of (sequence, list of ontology terms) (from dbbact.get_seq_list_fast_annotations() )
 
     Returns
     -------
@@ -140,15 +141,25 @@ def get_term_seqs(seqs, sequence_annotations):
 def annotation_enrichment(seqs1, seqs2, sequence_annotations):
     '''Test annotation enrichment for 2 groups of sequences
 
+    Test for enrichment in annotations in sequences from seqs1 compared to sequences from seqs2
+    Note: this test is done independently for each annotation
+
     Parameters
     ----------
-    exp : Experiment
     seqs1 : list of str sequences (ACGT)
     seqs2 : list of str sequences (ACGT)
-    sequence_annotations : dict of (sequence, list of annotationIDs)
+    sequence_annotations : dict of (sequence, list of annotationIDs) (from dbbact.get_seq_list_fast_annotations() )
 
     Returns
     -------
+    newplist: list of dict
+        One item per enriched annotation (following BH-FDR control), with the following keys/values:
+            'pval' - pvalue of the enrichment
+            'observed' - number of times annotation was observed in seqs1
+            'expected' - number of times annotation was expected to appear in seqs1 under null model
+            'group1' - fraction of sequences in seqs1 having the annotation
+            'group2' - fraction of sequences in seqs2 having the annotation
+            'description' - the annotation which is enriched
     '''
     logger.debug('enrichment. number of sequences in group1 and 2 is: %d, %d' % (len(seqs1), len(seqs2)))
     group1_annotations = get_annotation_count(seqs1, sequence_annotations)
@@ -200,15 +211,24 @@ def annotation_enrichment(seqs1, seqs2, sequence_annotations):
 def term_enrichment(seqs1, seqs2, sequence_terms):
     '''Test annotation enrichment for 2 groups of sequences
 
+    Test for enrichment in ontology terms in sequences from seqs1 compared to sequences from seqs2
+    Note: this test is done for all ontology terms in all annotations of the sequences (and the parent ontology terms)
+
     Parameters
     ----------
-    exp : Experiment
     seqs1 : list of str sequences (ACGT)
     seqs2 : list of str sequences (ACGT)
-    sequence_terms : dict of (sequence, list of ontology terms)
+    sequence_terms : dict of (sequence, list of ontology terms) (from dbbact.get_seq_list_fast_annotations() )
 
     Returns
     -------
+    newplist: list of dict
+        One item per enriched annotation (following BH-FDR control), with the following keys/values:
+            'tstat' : the t-statistic for the ontolgy term
+            'pval' - pvalue of the ontology term enrichment
+            'group1' - number of timers the ontology term appears in seqs1
+            'group2' - number of timers the ontology term appears in seqs2
+            'description' - name of the ontology term which is enriched
     '''
     logger.debug('enrichment. number of sequences in group1, 2 is %d, %d' % (len(seqs1), len(seqs2)))
     group1_terms = get_term_seqs(seqs1, sequence_terms)
