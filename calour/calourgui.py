@@ -18,8 +18,8 @@ from pkg_resources import resource_filename
 from PyQt5 import QtWidgets, QtCore, uic
 from PyQt5.QtWidgets import (QHBoxLayout, QVBoxLayout,
                              QWidget, QPushButton, QLabel,
-                             QComboBox, QLineEdit, QCheckBox, QSpinBox)
-from PyQt5.QtWidgets import QDialog, QDialogButtonBox
+                             QComboBox, QLineEdit, QCheckBox, QSpinBox,
+                             QDialog, QDialogButtonBox)
 
 import calour as ca
 import calour.cahelper as cah
@@ -33,7 +33,7 @@ class AppWindow(QtWidgets.QMainWindow):
     _explist = {}
 
     def __init__(self):
-        super(AppWindow, self).__init__()
+        super().__init__()
         # load the gui
         uic.loadUi(get_ui_file_name('CalourGUI.ui'), self)
 
