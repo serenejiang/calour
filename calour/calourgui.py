@@ -52,7 +52,6 @@ class AppWindow(QtWidgets.QMainWindow):
         for caction in action_groups:
             self.actions[caction] = {}
 
-        self.add_action_button('sample', 'barvaz', self.test)
         self.add_action_button('sample', 'Sort', self.sample_sort_samples)
         self.add_action_button('sample', 'Filter', self.sample_filter_samples)
         self.add_action_button('sample', 'Cluster', self.sample_cluster_samples)
@@ -265,11 +264,6 @@ class AppWindow(QtWidgets.QMainWindow):
                 return
         newexp._studyname = res['new name']
         self.addexp(newexp)
-
-    def test(self):
-        # fname,_ = QtWidgets.QFileDialog.getOpenFileName(self, 'Open table file')
-        expdat = self.get_exp_from_selection()
-        logger.debug(expdat._studyname)
 
     def add_action_button(self, group, name, function):
         self.actions[group][name] = QPushButton(text=name)
