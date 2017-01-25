@@ -56,7 +56,7 @@ class AppWindow(QtWidgets.QMainWindow):
         self.add_action_button('sample', 'Filter', self.sample_filter_samples)
         self.add_action_button('sample', 'Cluster', self.sample_cluster_samples)
         self.add_action_button('sample', 'Join fields', self.sample_join_fields)
-        self.add_action_button('sample', 'Filter orig. reads', self.sample_filter_orig_reads)
+        self.add_action_button('sample', 'Filter by original reads', self.sample_filter_orig_reads)
 
         self.add_action_button('feature', 'Cluster', self.feature_cluster)
         self.add_action_button('feature', 'Filter min reads', self.feature_filter_min_reads)
@@ -74,9 +74,6 @@ class AppWindow(QtWidgets.QMainWindow):
 
     def get_exp_from_selection(self):
         '''Get the experiment from the selection in wExperiments
-
-        Parameters
-        ----------
 
         Returns
         -------
