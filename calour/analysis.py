@@ -76,8 +76,8 @@ def getpbfdr(exp, field, val1=None, val2=None, method='meandiff', transform='ran
     return newexp
 
 
-def get_group_terms(seqs, sequence_annotations):
-    '''Get dict of number of each ontology term in seqs
+def get_annotation_count(seqs, sequence_annotations):
+    '''Get dict of number of each annotation term in seqs
 
     Parameters
     ----------
@@ -86,8 +86,8 @@ def get_group_terms(seqs, sequence_annotations):
 
     Returns
     -------
-    seq_annotations : dict of (ontology_term : count)
-        number of times each ontology term appears in the annotations for all sequences in seqs combined
+    seq_annotations : dict of (annotationID : count)
+        number of times each annotationID appears for all sequences in seqs combined
     '''
     seq_annotations = defaultdict(int)
     num_seqs_no_annotations = 0
@@ -95,8 +95,8 @@ def get_group_terms(seqs, sequence_annotations):
         if cseq not in sequence_annotations:
             num_seqs_no_annotations += 1
             continue
-        for cterm in sequence_annotations[cseq]:
-            seq_annotations[cterm] += 1
+        for cannotationid in sequence_annotations[cseq]:
+            seq_annotations[cannotationid] += 1
     if num_seqs_no_annotations > 0:
         logger.warn('found %d sequences with no annotations out of %d' % (num_seqs_no_annotations, len(seqs)))
     return seq_annotations
@@ -137,7 +137,7 @@ def get_term_seqs(seqs, sequence_annotations):
     return seq_annotations
 
 
-def enrichment(seqs1, seqs2, sequence_annotations):
+def annotation_enrichment(seqs1, seqs2, sequence_annotations):
     '''Test annotation enrichment for 2 groups of sequences
 
     Parameters
@@ -145,16 +145,16 @@ def enrichment(seqs1, seqs2, sequence_annotations):
     exp : Experiment
     seqs1 : list of str sequences (ACGT)
     seqs2 : list of str sequences (ACGT)
-    sequence_annotations : dict of (sequence, list of ontology terms)
+    sequence_annotations : dict of (sequence, list of annotationIDs)
 
     Returns
     -------
     '''
-    logger.debug('enrichment. number of sequences in group1, 2 is %d, %d' % (len(seqs1), len(seqs2)))
-    group1_terms = get_group_terms(seqs1, sequence_annotations)
-    group2_terms = get_group_terms(seqs2, sequence_annotations)
+    logger.debug('enrichment. number of sequences in group1 and 2 is: %d, %d' % (len(seqs1), len(seqs2)))
+    group1_annotations = get_annotation_count(seqs1, sequence_annotations)
+    group2_annotations = get_annotation_count(seqs2, sequence_annotations)
 
-    all_terms = set(group1_terms.keys()).union(set(group2_terms.keys()))
+    all_annotations = set(group1_annotations.keys()).union(set(group2_annotations.keys()))
     len1 = len(seqs1)
     len2 = len(seqs2)
     tot_len = len1 + len2
@@ -162,9 +162,9 @@ def enrichment(seqs1, seqs2, sequence_annotations):
     allp = []
     # list of info per p-value
     pv = []
-    for cterm in all_terms:
-        num1 = group1_terms.get(cterm, 0)
-        num2 = group2_terms.get(cterm, 0)
+    for cterm in all_annotations:
+        num1 = group1_annotations.get(cterm, 0)
+        num2 = group2_annotations.get(cterm, 0)
         pval = float(num1 + num2) / tot_len
         pval1 = 1 - stats.binom.cdf(num1, len1, pval)
         pval2 = 1 - stats.binom.cdf(num2, len2, pval)
@@ -174,7 +174,9 @@ def enrichment(seqs1, seqs2, sequence_annotations):
         cpv = {}
         cpv['pval'] = p
         cpv['observed'] = num1
-        cpv['expected'] = pval * num1
+        cpv['expected'] = pval * len1
+        cpv['group1'] = float(num1) / len1
+        cpv['group2'] = float(num2) / len2
         cpv['description'] = cterm
         pv.append(cpv)
 
@@ -185,6 +187,7 @@ def enrichment(seqs1, seqs2, sequence_annotations):
     for cidx in keep:
         plist.append(pv[cidx])
         rat.append(np.abs(float(pv[cidx]['observed'] - pv[cidx]['expected'])) / np.mean([pv[cidx]['observed'], pv[cidx]['expected']]))
+    print('found %d' % len(keep))
     si = np.argsort(rat)
     si = si[::-1]
     newplist = []
@@ -194,7 +197,7 @@ def enrichment(seqs1, seqs2, sequence_annotations):
     return(newplist)
 
 
-def enrichment2(seqs1, seqs2, sequence_annotations):
+def term_enrichment(seqs1, seqs2, sequence_terms):
     '''Test annotation enrichment for 2 groups of sequences
 
     Parameters
@@ -202,14 +205,14 @@ def enrichment2(seqs1, seqs2, sequence_annotations):
     exp : Experiment
     seqs1 : list of str sequences (ACGT)
     seqs2 : list of str sequences (ACGT)
-    sequence_annotations : dict of (sequence, list of ontology terms)
+    sequence_terms : dict of (sequence, list of ontology terms)
 
     Returns
     -------
     '''
     logger.debug('enrichment. number of sequences in group1, 2 is %d, %d' % (len(seqs1), len(seqs2)))
-    group1_terms = get_term_seqs(seqs1, sequence_annotations)
-    group2_terms = get_term_seqs(seqs2, sequence_annotations)
+    group1_terms = get_term_seqs(seqs1, sequence_terms)
+    group2_terms = get_term_seqs(seqs2, sequence_terms)
 
     len1 = len(seqs1)
     len2 = len(seqs2)

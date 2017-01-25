@@ -40,7 +40,8 @@ def _transition_index(l):
 
 
 def plot(exp, sample_field=None, feature_field=None, max_features=1000,
-         logit=True, log_cutoff=1, clim=(0, 10), xlabel_rotation=45, xlabel_maxlen=10, cmap=None, title=None, gui='cli', axis=None, rect=None):
+         logit=True, log_cutoff=1, clim=(0, 10), xlabel_rotation=45, xlabel_maxlen=10, cmap=None, title=None,
+         gui='cli', databases=['dbbact'], axis=None, rect=None):
     '''Plot an experiment heatmap
 
     Plot an interactive heatmap for the experiment
@@ -78,6 +79,11 @@ def plot(exp, sample_field=None, feature_field=None, max_features=1000,
         'qt5' : gui using QT5 (with full dbBact interface)
         'jupyter' : gui for Jupyter notebooks (using widgets)
         Other string : name of child class of plotgui (which should reside in gui/lower(classname).py)
+    databases : list of str (optional)
+        Names of the databases to use to obtain info about sequences. options:
+        'dbbact' : the dbBact manual annotation database
+        'spongeworld' : the sponge microbiome automatic annotation database
+        'redbiom' : the automatic qiita database
     axis : matplotlib axis or None (optional)
         None (default) to create a new figure, axis to plot heatmap into the axis
     rect : list of int or None (optional)
@@ -110,6 +116,19 @@ def plot(exp, sample_field=None, feature_field=None, max_features=1000,
     # get the class
     GUIClass = getattr(gui_module, gui)
     hdat = GUIClass(exp)
+
+    for cdatabase in databases:
+        if cdatabase == 'dbbact':
+            gui = 'DBBact'
+        elif cdatabase == 'spongeworld':
+            gui = 'DBSponge'
+        else:
+            raise ValueError('Unknown Database specified: %r' % cdatabase)
+        gui_module_name = 'calour.database.' + gui.lower()
+        gui_module = importlib.import_module(gui_module_name)
+        # get the class
+        DBClass = getattr(gui_module, gui)
+        hdat.databases.append(DBClass())
 
     # init the figure
     if axis is None:

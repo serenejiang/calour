@@ -15,6 +15,17 @@ class DBBact:
         self.username = get_config_value('username', section='dbBact')
         self.password = get_config_value('password', section='dbBact')
 
+    def get_name(self):
+        '''Get the name of the database.
+        Used for displaying when no annotations are found
+
+        Returns
+        -------
+        dbname : str
+            nice name of the database
+        '''
+        return 'dbBact'
+
     def _post(self, api, rdata):
         '''POST a request to dbBact using authorization parameters
 
@@ -80,6 +91,56 @@ class DBBact:
         logger.debug('Found %d annotations for sequence %s' % (len(annotations), sequence))
         return annotations
 
+    def get_annotation_string(self, cann):
+        '''Get nice string summaries of annotation
+
+        Parameters
+        ----------
+        cann : dict (annotation)
+
+        Returns
+        -------
+        desc : str
+            a short summary of the annotation
+        '''
+        cdesc = ''
+        if cann['description']:
+            cdesc += cann['description'] + ' ('
+        if cann['annotationtype'] == 'diffexp':
+            chigh = []
+            clow = []
+            call = []
+            for cdet in cann['details']:
+                if cdet[0] == 'all':
+                    call.append(cdet[1])
+                    continue
+                if cdet[0] == 'low':
+                    clow.append(cdet[1])
+                    continue
+                if cdet[0] == 'high':
+                    chigh.append(cdet[1])
+                    continue
+            cdesc += ' high in '
+            for cval in chigh:
+                cdesc += cval + ' '
+            cdesc += ' compared to '
+            for cval in clow:
+                cdesc += cval + ' '
+            cdesc += ' in '
+            for cval in call:
+                cdesc += cval + ' '
+        elif cann['annotationtype'] == 'isa':
+            cdesc += ' is a '
+            for cdet in cann['details']:
+                cdesc += 'cdet,'
+        elif cann['annotationtype'] == 'contamination':
+            cdesc += 'contamination'
+        else:
+            cdesc += cann['annotationtype'] + ' '
+            for cdet in cann['details']:
+                cdesc = cdesc + ' ' + cdet[1] + ','
+        return cdesc
+
     def get_seq_annotation_strings(self, sequence):
         '''Get nice string summaries of annotations for a given sequence
 
@@ -102,44 +163,8 @@ class DBBact:
         shortdesc = []
         annotations = self.get_seq_annotations(sequence)
         for cann in annotations:
-            annotationdetails = cann
-            cdesc = ''
-            if cann['description']:
-                cdesc += cann['description'] + ' ('
-            if cann['annotationtype'] == 'diffexp':
-                chigh = []
-                clow = []
-                call = []
-                for cdet in cann['details']:
-                    if cdet[0] == 'all':
-                        call.append(cdet[1])
-                        continue
-                    if cdet[0] == 'low':
-                        clow.append(cdet[1])
-                        continue
-                    if cdet[0] == 'high':
-                        chigh.append(cdet[1])
-                        continue
-                cdesc += ' high in '
-                for cval in chigh:
-                    cdesc += cval + ' '
-                cdesc += ' compared to '
-                for cval in clow:
-                    cdesc += cval + ' '
-                cdesc += ' in '
-                for cval in call:
-                    cdesc += cval + ' '
-            elif cann['annotationtype'] == 'isa':
-                cdesc += ' is a '
-                for cdet in cann['details']:
-                    cdesc += 'cdet,'
-            elif cann['annotationtype'] == 'contamination':
-                cdesc += 'contamination'
-            else:
-                cdesc += cann['annotationtype'] + ' '
-                for cdet in cann['details']:
-                    cdesc = cdesc + ' ' + cdet[1] + ','
-            shortdesc.append((annotationdetails, cdesc))
+            cdesc = self.get_annotation_string(cann)
+            shortdesc.append((cann, cdesc))
         return shortdesc
 
     def find_experiment_id(self, datamd5='', mapmd5='', getall=False):
@@ -358,8 +383,12 @@ class DBBact:
 
         Returns
         -------
-        sequence_annotations : dict of (sequence, list of terms)
-            key is sequence, value is list of ontology terms present in the bacteria
+        sequence_terms : dict of {sequence: list of terms}
+            key is sequence, value is list of ontology terms present in the bacteria.
+        sequence_annotations : dict of {sequence: list of annotationIDs}
+            key is sequence, value is list of annotationIDs present in the bacteria.
+        annotations : dict of {annotationID : annotation_details}
+            key is annotaitonID (int), value is the dict of annotation details.
         '''
         rdata = {}
         rdata['sequences'] = list(sequences)
@@ -369,21 +398,29 @@ class DBBact:
             return None
         res = res.json()
 
+        sequence_terms = {}
         sequence_annotations = {}
         for cseq in sequences:
+            sequence_terms[cseq] = []
             sequence_annotations[cseq] = []
-
         for cseqannotation in res['seqannotations']:
             cpos = cseqannotation[0]
             # need str since json dict is always string
             cseq = sequences[cpos]
+            sequence_annotations[cseq].extend(cseqannotation[1])
             for cannotation in cseqannotation[1]:
                 for k, v in res['annotations'][str(cannotation)]['parents'].items():
                     if k == 'high' or k == 'all':
                         for cterm in v:
-                            sequence_annotations[cseq].append(cterm)
+                            sequence_terms[cseq].append(cterm)
                     elif k == 'low':
                         for cterm in v:
-                            sequence_annotations[cseq].append('-' + cterm)
+                            sequence_terms[cseq].append('-' + cterm)
 
-        return sequence_annotations
+        annotations = res['annotations']
+        # replace the string in the key with an int (since in json key is always str)
+        keys = list(annotations.keys())
+        for cid in keys:
+            annotations[int(cid)] = annotations.pop(cid)
+
+        return sequence_terms, sequence_annotations, res['annotations']

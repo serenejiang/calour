@@ -44,6 +44,9 @@ class PlotGUI:
         # list of selected samples
         self.selected_samples = {}
 
+        # list of databases to interface with
+        self.databases = []
+
     def get_figure(self, newfig=None):
         ''' Get the figure to plot the heatmap into
 

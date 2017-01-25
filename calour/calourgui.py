@@ -23,6 +23,7 @@ from PyQt5.QtWidgets import QDialog, QDialogButtonBox
 
 import calour as ca
 import calour.cahelper as cah
+import calour.analysis
 
 logger = getLogger(__name__)
 
@@ -63,6 +64,8 @@ class AppWindow(QtWidgets.QMainWindow):
         self.add_action_button('feature', 'Filter taxonomy', self.feature_filter_taxonomy)
         self.add_action_button('feature', 'Filter fasta', self.feature_filter_fasta)
         self.add_action_button('feature', 'Sort Abundance', self.feature_sort_abundance)
+
+        self.add_action_button('analysis', 'Diff. abundance', self.analysis_diff_abundance)
 
         # load sample dataset for debugging
         exp = ca.read_taxa('/Users/amnon/Projects/centenarians/final.withtax.biom', '/Users/amnon/Projects/centenarians/map.txt')
@@ -135,7 +138,7 @@ class AppWindow(QtWidgets.QMainWindow):
         logger.debug('filter samples for study: %s' % expdat._studyname)
         res = dialog([{'type': 'label', 'label': 'Filter Samples'},
                       {'type': 'field', 'label': 'Field'},
-                      {'type': 'value', 'label': 'vals'},
+                      {'type': 'value', 'label': 'value'},
                       {'type': 'bool', 'label': 'negate'},
                       {'type': 'string', 'label': 'new name'}], expdat=expdat)
         if res is None:
@@ -235,13 +238,31 @@ class AppWindow(QtWidgets.QMainWindow):
         expdat = self.get_exp_from_selection()
         res = dialog([{'type': 'label', 'label': 'Sort features by abundance'},
                       {'type': 'field', 'label': 'Field', 'withnone': True},
-                      {'type': 'value', 'label': 'vals'},
+                      {'type': 'value', 'label': 'value'},
                       {'type': 'string', 'label': 'new name'}], expdat=expdat)
         if res is None:
             return
         if res['new name'] == '':
             res['new name'] = '%s-sort-abundance' % expdat._studyname
         newexp = cah.sort_freq(expdat, field=res['field'], value=res['value'])
+        newexp._studyname = res['new name']
+        self.addexp(newexp)
+
+    def analysis_diff_abundance(self):
+        expdat = self.get_exp_from_selection()
+        res = dialog([{'type': 'label', 'label': 'Differential abundance'},
+                      {'type': 'field', 'label': 'Field', 'withnone': True},
+                      {'type': 'value', 'label': 'Value group 1'},
+                      {'type': 'value', 'label': 'Value group 2'},
+                      {'type': 'string', 'label': 'new name'}], expdat=expdat)
+        if res is None:
+            return
+        if res['new name'] == '':
+            res['new name'] = '%s-diff-%s' % (expdat._studyname, res['field'])
+        newexp = calour.analysis.getpbfdr(expdat, field=res['field'], val1=res['Value group 1'], val2=res['Value group 2'])
+        if newexp is None:
+                QtWidgets.QMessageBox.information(self, "No enriched terms found", "No enriched annotations found")
+                return
         newexp._studyname = res['new name']
         self.addexp(newexp)
 
@@ -304,7 +325,8 @@ class AppWindow(QtWidgets.QMainWindow):
                 return
         for currentItemName in self.wExperiments.selectedItems():
             currentItemName = str(currentItemName.text())
-            self.removeexp(currentItemName)
+            cexp = self._explist[currentItemName]
+            self.removeexp(cexp)
 
     def menuSave(self):
         expdat = self.get_exp_from_selection()
@@ -476,7 +498,7 @@ def dialog(items, expdat=None,  title=None):
                         logger.warn('Experiment is empty for dialog %s' % title)
                         return None
                     widget = QLineEdit()
-                    self.add(widget, label=citem.get('label'), name='value', addbutton=True)
+                    self.add(widget, label=citem.get('label'), name=citem.get('label'), addbutton=True)
                 elif citem['type'] == 'filename':
                     widget = QLineEdit()
                     self.add(widget, label=citem.get('label'), name='value', addfilebutton=True)
@@ -499,7 +521,7 @@ def dialog(items, expdat=None,  title=None):
             hlayout.addWidget(widget)
             if addbutton:
                 bwidget = QPushButton(text='...')
-                bwidget.clicked.connect(self.field_vals_click)
+                bwidget.clicked.connect(lambda: self.field_vals_click(widget))
                 hlayout.addWidget(bwidget)
             if addfilebutton:
                 bwidget = QPushButton(text='...')
@@ -508,13 +530,13 @@ def dialog(items, expdat=None,  title=None):
             self.layout.addLayout(hlayout)
             self.widgets[name] = widget
 
-        def field_vals_click(self):
+        def field_vals_click(self, widget):
             cfield = str(self.widgets['field'].currentText())
             if cfield not in self._expdat.sample_metadata.columns:
                 return
             val, ok = QtWidgets.QInputDialog.getItem(self, 'Select value', 'Field=%s' % cfield, list(set(self._expdat.sample_metadata[cfield].astype(str))))
             if ok:
-                self.widgets['value'].setText(val)
+                widget.setText(val)
 
         def file_button_click(self, widget):
             fname, _x = QtWidgets.QFileDialog.getOpenFileName(self, 'Open fasta file')
@@ -537,7 +559,7 @@ def dialog(items, expdat=None,  title=None):
                     if output['field'] == '<none>':
                         output['field'] = None
                 elif citem['type'] == 'value':
-                    output['value'] = str(self.widgets['value'].text())
+                    output[cname] = str(self.widgets[cname].text())
                 elif citem['type'] == 'file':
                     output[cname] = str(self.widgets[cname].text())
                 elif citem['type'] == 'bool':

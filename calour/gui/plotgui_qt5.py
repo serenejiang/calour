@@ -13,7 +13,6 @@ from calour.dbbact import DBBact
 from calour.gui.plotgui import PlotGUI
 import calour.analysis
 
-
 logger = getLogger(__name__)
 
 
@@ -24,7 +23,8 @@ class PlotGUI_QT5(PlotGUI):
     '''
     def __init__(self, *kargs, **kwargs):
         PlotGUI.__init__(self, *kargs, **kwargs)
-        self.dbbact = DBBact()
+        # self.dbbact = DBBact()
+        # self.dbbact = DBSponge()
 
     def get_figure(self, newfig=None):
         app_created = False
@@ -66,7 +66,13 @@ class PlotGUI_QT5(PlotGUI):
         self.aw.w_field_val.setText(str(self.exp.sample_metadata[csample_field][self.last_select_sample]))
 
         self.aw.w_dblist.clear()
-        info = self.dbbact.get_seq_annotation_strings(sequence)
+        info = []
+        for cdatabase in self.databases:
+            cinfo = cdatabase.get_seq_annotation_strings(sequence)
+            if len(cinfo) == 0:
+                cinfo = [[{'annotationtype': 'not found'}, 'No annotation found in database %s' % cdatabase.get_name()]]
+            info.extend(cinfo)
+        # info = self.dbbact.get_seq_annotation_strings(sequence)
         self.addtocdblist(info)
 
     def addtocdblist(self, info):
@@ -214,8 +220,8 @@ class ApplicationWindow(QMainWindow):
         group2_seqs = list(set(allseqs).difference(set(group1_seqs)))
         logger.debug('Getting fast experiment annotations for %d sequences' % len(allseqs))
         dbb = DBBact()
-        annotations = dbb.get_seq_list_fast_annotations(allseqs)
-        res = calour.analysis.enrichment2(group1_seqs, group2_seqs, annotations)
+        sequence_terms, sequence_annotations, annotations = dbb.get_seq_list_fast_annotations(allseqs)
+        res = calour.analysis.term_enrichment(group1_seqs, group2_seqs, sequence_terms)
         logger.debug('Got %d enriched terms' % len(res))
         if len(res) == 0:
             QtWidgets.QMessageBox.information(self, "No enriched terms found", "No enriched annotations found when comparing\n%d selected sequences to %d other sequences" % (len(group1_seqs), len(group2_seqs)))
@@ -227,6 +233,20 @@ class ApplicationWindow(QMainWindow):
             else:
                 ccolor = 'red'
             listwin.add_item('%s - %f (selected %d, other %d) ' % (cres['description'], cres['pval'], cres['group1'], cres['group2']), color=ccolor)
+        listwin.exec_()
+        res = calour.analysis.annotation_enrichment(group1_seqs, group2_seqs, sequence_annotations)
+        logger.debug('Got %d enriched terms' % len(res))
+        if len(res) == 0:
+            QtWidgets.QMessageBox.information(self, "No enriched terms found", "No enriched annotations found when comparing\n%d selected sequences to %d other sequences" % (len(group1_seqs), len(group2_seqs)))
+            return
+        listwin = SListWindow(listname='enriched ontology terms')
+        for cres in res:
+            if cres['group1'] > cres['group2']:
+                ccolor = 'blue'
+            else:
+                ccolor = 'red'
+            cname = dbb.get_annotation_string(annotations[cres['description']])
+            listwin.add_item('%s - %f (selected %f, other %f) ' % (cname, cres['pval'], cres['group1'], cres['group2']), color=ccolor)
         listwin.exec_()
 
     def annotate(self):

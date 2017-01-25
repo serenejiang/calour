@@ -1,7 +1,6 @@
 import ipywidgets
 from IPython.display import display, clear_output
 
-from calour.dbbact import DBBact
 from calour.gui.plotgui import PlotGUI
 
 
@@ -12,7 +11,7 @@ class PlotGUI_Jupyter(PlotGUI):
     '''
     def __init__(self, *kargs, **kwargs):
         PlotGUI.__init__(self, *kargs, **kwargs)
-        self.dbbact = DBBact()
+        self.databases = []
 
     def get_figure(self, newfig=None):
         fig = PlotGUI.get_figure(self, newfig=newfig)
@@ -69,7 +68,15 @@ class PlotGUI_Jupyter(PlotGUI):
         self.labsamp.value = str(sampname)
         self.labreads.value = 'Reads:{:.01f}'.format(self.exp.get_data()[self.last_select_sample, self.last_select_feature])
         self.lab_selected.value = 'Selected: %d' % len(self.selected_features)
-        info = self.dbbact.get_seq_annotation_strings(sequence)
+
+        # get the database annotations
+        info = []
+        for cdatabase in self.databases:
+            cinfo = cdatabase.get_seq_annotation_strings(sequence)
+            if len(cinfo) == 0:
+                cinfo = [[{'annotationtype': 'not found'}, 'No annotation found in database %s' % cdatabase.get_name()]]
+            info.extend(cinfo)
+        # info = self.dbbact.get_seq_annotation_strings(sequence)
         idata = ''
         for cinfo in info:
             cstr = cinfo[1]
