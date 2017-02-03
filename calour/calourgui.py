@@ -14,6 +14,7 @@ import sys
 import os
 from logging import getLogger
 from pkg_resources import resource_filename
+import argparse
 
 from PyQt5 import QtWidgets, QtCore, uic
 from PyQt5.QtWidgets import (QHBoxLayout, QVBoxLayout,
@@ -32,7 +33,14 @@ class AppWindow(QtWidgets.QMainWindow):
     # the experiments loaded for analysis
     _explist = {}
 
-    def __init__(self):
+    def __init__(self, load_exp=None):
+        '''Start the gui and load data if supplied
+
+        Parameters
+        ----------
+        load_exp : list of (table_file_name, map_file_name, study_name) or None (optional)
+            load the experiments in the list upon startup
+        '''
         super().__init__()
         # load the gui
         uic.loadUi(get_ui_file_name('CalourGUI.ui'), self)
@@ -52,25 +60,47 @@ class AppWindow(QtWidgets.QMainWindow):
         for caction in action_groups:
             self.actions[caction] = {}
 
-        self.add_action_button('sample', 'Sort', self.sample_sort_samples)
-        self.add_action_button('sample', 'Filter', self.sample_filter_samples)
-        self.add_action_button('sample', 'Cluster', self.sample_cluster_samples)
-        self.add_action_button('sample', 'Join fields', self.sample_join_fields)
-        self.add_action_button('sample', 'Filter by original reads', self.sample_filter_orig_reads)
+        # Add 'sample' buttons
+        sample_buttons = ['Sort', 'Filter', 'Cluster', 'Join fields', 'Filter by original reads']
+        self.add_buttons('sample', sample_buttons)
 
-        self.add_action_button('feature', 'Cluster', self.feature_cluster)
-        self.add_action_button('feature', 'Filter min reads', self.feature_filter_min_reads)
-        self.add_action_button('feature', 'Filter taxonomy', self.feature_filter_taxonomy)
-        self.add_action_button('feature', 'Filter fasta', self.feature_filter_fasta)
-        self.add_action_button('feature', 'Sort Abundance', self.feature_sort_abundance)
+        feature_buttons = ['Cluster', 'Filter min reads', 'Filter taxonomy', 'Filter fasta', 'Sort abundance']
+        self.add_buttons('feature', feature_buttons)
 
-        self.add_action_button('analysis', 'Diff. abundance', self.analysis_diff_abundance)
+        analysis_buttons = ['Diff. abundance']
+        self.add_buttons('analysis', analysis_buttons)
 
-        # load sample dataset for debugging
-        exp = ca.read_taxa('/Users/amnon/Projects/centenarians/final.withtax.biom', '/Users/amnon/Projects/centenarians/map.txt')
-        exp._studyname = 'centenarians'
-        self.addexp(exp)
+        # load experiments supplied
+        if load_exp is not None:
+            for cdata in load_exp:
+                study_name = cdata[2]
+                if study_name is None:
+                    study_name = cdata[0]
+                exp = ca.read_taxa(cdata[0], cdata[1])
+                exp._studyname = study_name
+                self.addexp(exp)
+
         self.show()
+
+    def add_buttons(self, group, button_list):
+        '''Add buttons to the specified divider list and link to functions
+
+        Function names should be similar to button name, only lowercase and space replace by '_' and '.' removed,
+        with 'group'_ before
+
+        Parameters
+        ----------
+        group : str
+            tab to add the buttons to ('sample', 'feature', 'analysis')
+        button_list : list of str
+            list of button names. should have a corresponding function with same name
+        '''
+        for cbutton in button_list:
+            cfunc_name = '%s_%s' % (group.lower(), cbutton.lower().replace(' ', '_').replace('.', ''))
+            try:
+                self.add_action_button(group, cbutton, getattr(self, cfunc_name))
+            except:
+                logger.warn('function %s not found - cannot add button' % cfunc_name)
 
     def get_exp_from_selection(self):
         '''Get the experiment from the selection in wExperiments
@@ -110,7 +140,7 @@ class AppWindow(QtWidgets.QMainWindow):
             newexp = expdat
         newexp.plot(gui='qt5', sample_field=field)
 
-    def sample_sort_samples(self):
+    def sample_sort(self):
         expdat = self.get_exp_from_selection()
         res = dialog([{'type': 'label', 'label': 'Sort Samples'},
                       {'type': 'field', 'label': 'Field'},
@@ -123,13 +153,13 @@ class AppWindow(QtWidgets.QMainWindow):
         newexp._studyname = res['new name']
         self.addexp(newexp)
 
-    def sample_cluster_samples(self):
+    def sample_cluster(self):
         expdat = self.get_exp_from_selection()
         newexp = expdat.cluster_data(axis=1)
         newexp._studyname = newexp._studyname + '-cluster-samples'
         self.addexp(newexp)
 
-    def sample_filter_samples(self):
+    def sample_filter(self):
         expdat = self.get_exp_from_selection()
         logger.debug('filter samples for study: %s' % expdat._studyname)
         res = dialog([{'type': 'label', 'label': 'Filter Samples'},
@@ -162,7 +192,7 @@ class AppWindow(QtWidgets.QMainWindow):
         newexp._studyname = res['new name']
         self.addexp(newexp)
 
-    def sample_filter_orig_reads(self):
+    def sample_filter_by_original_reads(self):
         expdat = self.get_exp_from_selection()
         res = dialog([{'type': 'label', 'label': 'Filter Original Reads'},
                       {'type': 'int', 'label': 'Orig Reads', 'max': 100000, 'default': 10000},
@@ -589,9 +619,20 @@ def get_ui_file_name(filename):
 
 
 def main():
+    parser = argparse.ArgumentParser(description='GUI for Calour microbiome analysis')
+    parser.add_argument('--table', help='biom table to load on startup', default=None)
+    parser.add_argument('--map', help='mapping file to load on startup', default=None)
+    parser.add_argument('--name', help='loaded study name', default=None)
+    args = parser.parse_args()
+
+    if args.table is None:
+        load_exp = None
+    else:
+        load_exp = [(args.table, args.map, args.name)]
+
     logger.info('starting Calour GUI')
     app = QtWidgets.QApplication(sys.argv)
-    window = AppWindow()
+    window = AppWindow(load_exp=load_exp)
     window.show()
     sys.exit(app.exec_())
 

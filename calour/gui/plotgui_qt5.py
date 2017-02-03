@@ -57,7 +57,10 @@ class PlotGUI_QT5(PlotGUI):
             logger.debug('window not in app window list. Not removed')
 
     def update_info(self):
-        taxname = self.exp.feature_metadata['taxonomy'][self.last_select_feature]
+        if 'taxonomy' in self.exp.feature_metadata:
+            taxname = self.exp.feature_metadata['taxonomy'][self.last_select_feature]
+        else:
+            taxname = 'NA'
         sequence = self.exp.feature_metadata.index[self.last_select_feature]
         self.aw.w_taxonomy.setText(taxname)
         self.aw.w_reads.setText('reads:{:.01f}'.format(self.exp.get_data()[self.last_select_sample, self.last_select_feature]))
@@ -68,9 +71,12 @@ class PlotGUI_QT5(PlotGUI):
         self.aw.w_dblist.clear()
         info = []
         for cdatabase in self.databases:
-            cinfo = cdatabase.get_seq_annotation_strings(sequence)
-            if len(cinfo) == 0:
-                cinfo = [[{'annotationtype': 'not found'}, 'No annotation found in database %s' % cdatabase.get_name()]]
+            try:
+                cinfo = cdatabase.get_seq_annotation_strings(sequence)
+                if len(cinfo) == 0:
+                    cinfo = [[{'annotationtype': 'not found'}, 'No annotation found in database %s' % cdatabase.get_name()]]
+            except:
+                cinfo = 'error connecting to db %s' % cdatabase.get_name()
             info.extend(cinfo)
         # info = self.dbbact.get_seq_annotation_strings(sequence)
         self.add_to_annotation_list(info)

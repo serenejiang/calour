@@ -9,7 +9,8 @@ logger = getLogger(__name__)
 class DBSponge:
     def __init__(self):
         # Web address of the bact server
-        self.dburl = 'http://127.0.0.1:5000'
+        # self.dburl = 'http://127.0.0.1:5000'
+        self.dburl = 'http://amnonim.webfactional.com/spongeworld'
 
     def get_name(self):
         '''Get the name of the database.
@@ -39,7 +40,7 @@ class DBSponge:
         '''
         res = requests.post(self.dburl + '/' + api, json=rdata)
         if res.status_code != 200:
-            logger.warn('REST error %s enountered when accessing dbBact %s' % (res.reason, api))
+            logger.warn('REST error %s enountered when accessing spongeworld %s' % (res.reason, api))
         return res
 
     def _get(self, api, rdata):
@@ -59,7 +60,7 @@ class DBSponge:
         '''
         res = requests.get(self.dburl + '/' + api, json=rdata)
         if res.status_code != 200:
-            logger.warn('REST error %s enountered when accessing dbBact %s' % (res.reason, api))
+            logger.warn('REST error %s enountered when accessing spongeworld %s' % (res.reason, api))
         return res
 
     def get_seq_annotations(self, sequence):
