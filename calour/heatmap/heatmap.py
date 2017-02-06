@@ -120,18 +120,19 @@ def plot(exp, sample_field=None, feature_field=None, max_features=1000,
     hdat = GUIClass(exp)
     print('created instance')
     hdat._annotation_db = None
+    # link with the databases requested
     for cdatabase in databases:
         if cdatabase == 'dbbact':
             db_name = 'DBBact'
             db_module_name = 'dbbact_calour.dbbact'
-            db_module = importlib.import_module(db_module_name)
         elif cdatabase == 'spongeworld':
             db_name = 'DBSponge'
+            db_module_name = 'dbbact_calour.dbsponge'
         else:
             raise ValueError('Unknown Database specified: %r' % cdatabase)
-        # db_module_name = 'calour.database.' + db_name.lower()
-        # db_module = importlib.import_module(db_module_name)
 
+        # import the database module
+        db_module = importlib.import_module(db_module_name)
         # get the class
         DBClass = getattr(db_module, db_name)
         cdb = DBClass()
