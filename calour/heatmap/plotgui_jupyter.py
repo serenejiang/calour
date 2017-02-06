@@ -1,7 +1,11 @@
+from logging import getLogger
 import ipywidgets
 from IPython.display import display, clear_output
 
 from calour.gui.plotgui import PlotGUI
+
+
+logger = getLogger(__name__)
 
 
 class PlotGUI_Jupyter(PlotGUI):
@@ -10,7 +14,7 @@ class PlotGUI_Jupyter(PlotGUI):
     We open the figure as a widget inside the qt5 window
     '''
     def __init__(self, *kargs, **kwargs):
-        super.__init__(*kargs, **kwargs)
+        super().__init__(*kargs, **kwargs)
         self.databases = []
 
     def get_figure(self, newfig=None):
@@ -56,7 +60,7 @@ class PlotGUI_Jupyter(PlotGUI):
         display(self.labdb)
         return fig
 
-    def update_info(self):
+    def show_info(self):
         # taxname = self.exp.feature_metadata['taxonomy'][self.last_select_feature]
         taxname = self.exp.feature_metadata[self.select_feature_info.value][self.last_select_feature]
         # sampname = self.exp.sample_metadata.index[self.last_select_sample]
@@ -134,11 +138,14 @@ def zoom_out(b, hdat):
 def _annotate(b, hdat):
     '''Add database annotation to selected features
     '''
-    from calour.annotation import annotate_bacteria_gui
+    if hdat._annotation_db is None:
+        logger.warn('No database with add annotation capability selected (use plot(...,databases=[dbname])')
+        return
 
     # get the sequences of the selection
     seqs = []
     for cseqpos in hdat.selected_features.keys():
         seqs.append(hdat.exp.feature_metadata.index[cseqpos])
 
-    annotate_bacteria_gui(seqs, hdat.exp)
+    # from calour.annotation import annotate_bacteria_gui
+    hdat._annotation_db.add_annotation(seqs, hdat.exp)

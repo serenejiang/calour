@@ -104,7 +104,7 @@ def get_annotation_count(seqs, sequence_annotations):
     return seq_annotations
 
 
-def get_term_seqs(seqs, sequence_annotations):
+def get_term_features(seqs, sequence_annotations):
     '''Get dict of number of appearances in each sequence keyed by term
 
     Parameters
@@ -240,8 +240,12 @@ def term_enrichment(seqs1, seqs2, sequence_terms):
             'description' - name of the ontology term which is enriched
     '''
     logger.debug('enrichment. number of sequences in group1, 2 is %d, %d' % (len(seqs1), len(seqs2)))
-    group1_terms = get_term_seqs(seqs1, sequence_terms)
-    group2_terms = get_term_seqs(seqs2, sequence_terms)
+    if len(sequence_terms) == 0:
+        logger.debug('no terms in list')
+        return []
+
+    group1_terms = get_term_features(seqs1, sequence_terms)
+    group2_terms = get_term_features(seqs2, sequence_terms)
 
     len1 = len(seqs1)
     len2 = len(seqs2)
@@ -279,6 +283,81 @@ def term_enrichment(seqs1, seqs2, sequence_terms):
     # si = np.argsort(rat)
     si = np.argsort(newpvals)[::-1]
     rat = rat[si]
+    si = si[::-1]
+    newplist = []
+    for idx, crat in enumerate(rat):
+        newplist.append(plist[si[idx]])
+
+    return(newplist)
+
+
+def relative_enrichment(exp, features, feature_terms):
+    '''Get the list of enriched terms in features compared to all features in exp, given uneven distribtion of number of terms per feature
+
+    Parameters
+    ----------
+    exp : calour.Experiment
+        The experiment to compare the features to
+    features : list of str
+        The features (from exp) to test for enrichmnt
+    feature_terms : dict of {feature: list of terms}
+        The terms associated with each feature in exp
+        feature (key) : str
+            the feature (out of exp) to which the terms relate
+        feature_terms (value) : list of str or int
+            the terms associated with this feature
+    '''
+    all_features = set(exp.feature_metadata.index.values)
+    bg_features = list(all_features.difference(features))
+    # get the number of features each term appears in the bg and fg feature lists
+    bg_terms = get_term_features(bg_features, feature_terms)
+    fg_terms = get_term_features(features, feature_terms)
+
+    for cterm in bg_terms.keys():
+        bg_terms[cterm] = np.sum(bg_terms[cterm])
+    for cterm in fg_terms.keys():
+        fg_terms[cterm] = np.sum(fg_terms[cterm])
+
+    total_bg_terms = np.sum(list(bg_terms.values()))
+    total_fg_terms = np.sum(list(fg_terms.values()))
+    total_terms = total_bg_terms + total_fg_terms
+
+    # calculate total count for each feature in both lists combined
+    all_terms = bg_terms.copy()
+    for cterm, ccount in fg_terms.items():
+        if cterm not in all_terms:
+            all_terms[cterm] = 0
+        all_terms[cterm] += fg_terms[cterm]
+
+    allp = []
+    pv = []
+    for cterm in all_terms.keys():
+        pval = all_terms[cterm] / total_terms
+        num1 = fg_terms.get(cterm, 0)
+        num2 = bg_terms.get(cterm, 0)
+        pval1 = 1 - stats.binom.cdf(num1, total_fg_terms, pval)
+        pval2 = 1 - stats.binom.cdf(num2, total_bg_terms, pval)
+        p = np.min([pval1, pval2])
+        # store the result
+        allp.append(p)
+        cpv = {}
+        cpv['pval'] = p
+        cpv['observed'] = fg_terms[cterm]
+        cpv['expected'] = total_fg_terms * pval
+        cpv['group1'] = num1 / total_fg_terms
+        cpv['group2'] = num2 / total_bg_terms
+        cpv['description'] = cterm
+        pv.append(cpv)
+
+    reject, _, _, _ = multipletests(allp, method='fdr_bh')
+    keep = np.where(reject)[0]
+    plist = []
+    rat = []
+    for cidx in keep:
+        plist.append(pv[cidx])
+        rat.append(np.abs(float(pv[cidx]['observed'] - pv[cidx]['expected'])) / np.mean([pv[cidx]['observed'], pv[cidx]['expected']]))
+    print('found %d' % len(keep))
+    si = np.argsort(rat)
     si = si[::-1]
     newplist = []
     for idx, crat in enumerate(rat):

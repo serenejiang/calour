@@ -9,8 +9,7 @@ from PyQt5.QtWidgets import (QMainWindow, QHBoxLayout, QVBoxLayout,
                              QFrame, QComboBox, QScrollArea, QListWidgetItem, QDialogButtonBox)
 from PyQt5.QtWidgets import QApplication
 
-from calour.database.dbbact import DBBact
-from calour.gui.plotgui import PlotGUI
+from .plotgui import PlotGUI
 import calour.analysis
 
 logger = getLogger(__name__)
@@ -23,8 +22,6 @@ class PlotGUI_QT5(PlotGUI):
     '''
     def __init__(self, *kargs, **kwargs):
         super().__init__(*kargs, **kwargs)
-        # self.dbbact = DBBact()
-        # self.dbbact = DBSponge()
 
     def get_figure(self, newfig=None):
         app_created = False
@@ -56,7 +53,7 @@ class PlotGUI_QT5(PlotGUI):
         else:
             logger.debug('window not in app window list. Not removed')
 
-    def update_info(self):
+    def show_info(self):
         if 'taxonomy' in self.exp.feature_metadata:
             taxname = self.exp.feature_metadata['taxonomy'][self.last_select_feature]
         else:
@@ -75,13 +72,15 @@ class PlotGUI_QT5(PlotGUI):
                 cinfo = cdatabase.get_seq_annotation_strings(sequence)
                 if len(cinfo) == 0:
                     cinfo = [[{'annotationtype': 'not found'}, 'No annotation found in database %s' % cdatabase.get_name()]]
+                else:
+                    for cannotation in cinfo:
+                        cannotation[0]['_db_interface'] = cdatabase
             except:
                 cinfo = 'error connecting to db %s' % cdatabase.get_name()
             info.extend(cinfo)
-        # info = self.dbbact.get_seq_annotation_strings(sequence)
-        self.add_to_annotation_list(info)
+        self._display_annotation_in_qlistwidget(info)
 
-    def add_to_annotation_list(self, info):
+    def _display_annotation_in_qlistwidget(self, info):
         '''Add a line to the annotation list
         Does not erase previous lines
 
@@ -89,6 +88,7 @@ class PlotGUI_QT5(PlotGUI):
         ----------
         info : list of (dict, string)
             dict : contains the key 'annotationtype' and determines the annotation color
+            also contains all other annotation data needed for right click menu/double click
             string : str
                 The string to add to the list
         '''
@@ -110,7 +110,7 @@ class PlotGUI_QT5(PlotGUI):
             self.aw.w_dblist.addItem(newitem)
 
 
-class MyMplCanvas(FigureCanvas):
+class MplCanvas(FigureCanvas):
     """Ultimately, this is a QWidget (as well as a FigureCanvasAgg, etc.)."""
     def __init__(self, parent=None, width=5, height=4, dpi=100):
         fig = Figure(figsize=(width, height), dpi=dpi)
@@ -170,6 +170,7 @@ class ApplicationWindow(QMainWindow):
         userside.addLayout(lbox_buttons)
         # db annotations list
         self.w_dblist = QListWidget()
+        self.w_dblist.itemDoubleClicked.connect(self.double_click_annotation)
         userside.addWidget(self.w_dblist)
 
         lbox_buttons_bottom = QHBoxLayout()
@@ -180,7 +181,7 @@ class ApplicationWindow(QMainWindow):
         userside.addLayout(lbox_buttons_bottom)
 
         layout = QHBoxLayout(self.main_widget)
-        heatmap = MyMplCanvas(self.main_widget, width=5, height=4, dpi=100)
+        heatmap = MplCanvas(self.main_widget, width=5, height=4, dpi=100)
         frame = QFrame()
         splitter = QSplitter(QtCore.Qt.Horizontal, self.main_widget)
         splitter.addWidget(heatmap)
@@ -223,31 +224,41 @@ class ApplicationWindow(QMainWindow):
         clipboard.setText(cseq)
 
     def save_fasta(self):
-        seqs = self.get_selected_seqs()
+        seqs = self.gui.get_selected_seqs()
         filename, _ = QtWidgets.QFileDialog.getSaveFileName(self, caption='Save selected seqs to fasta')
         self.gui.exp.save_fasta(str(filename), seqs)
 
     def enrichment(self):
-        group1_seqs = self.get_selected_seqs()
+        group1_seqs = self.gui.get_selected_seqs()
         allseqs = self.gui.exp.feature_metadata.index.values
         group2_seqs = list(set(allseqs).difference(set(group1_seqs)))
+
         logger.debug('Getting fast experiment annotations for %d sequences' % len(allseqs))
+        for cdb in self.gui.databases:
+            logger.debug('Database: %s' % cdb.get_name())
+            feature_terms = cdb.get_feature_terms(allseqs, self.gui.exp)
+            logger.debug('got %d terms' % len(feature_terms))
+            res = calour.analysis.term_enrichment(group1_seqs, group2_seqs, feature_terms)
+
         dbb = DBBact()
         sequence_terms, sequence_annotations, annotations = dbb.get_seq_list_fast_annotations(allseqs)
-        res = calour.analysis.term_enrichment(group1_seqs, group2_seqs, sequence_terms)
-        logger.debug('Got %d enriched terms' % len(res))
-        if len(res) == 0:
-            QtWidgets.QMessageBox.information(self, "No enriched terms found", "No enriched annotations found when comparing\n%d selected sequences to %d other sequences" % (len(group1_seqs), len(group2_seqs)))
-            return
-        listwin = SListWindow(listname='enriched ontology terms')
-        for cres in res:
-            if cres['group1'] > cres['group2']:
-                ccolor = 'blue'
-            else:
-                ccolor = 'red'
-            listwin.add_item('%s - %f (selected %d, other %d) ' % (cres['description'], cres['pval'], cres['group1'], cres['group2']), color=ccolor)
-        listwin.exec_()
-        res = calour.analysis.annotation_enrichment(group1_seqs, group2_seqs, sequence_annotations)
+
+        # res = calour.analysis.term_enrichment(group1_seqs, group2_seqs, sequence_terms)
+        # logger.debug('Got %d enriched terms' % len(res))
+        # if len(res) == 0:
+        #     QtWidgets.QMessageBox.information(self, "No enriched terms found", "No enriched annotations found when comparing\n%d selected sequences to %d other sequences" % (len(group1_seqs), len(group2_seqs)))
+        #     return
+        # listwin = SListWindow(listname='enriched ontology terms')
+        # for cres in res:
+        #     if cres['group1'] > cres['group2']:
+        #         ccolor = 'blue'
+        #     else:
+        #         ccolor = 'red'
+        #     listwin.add_item('%s - %f (selected %d, other %d) ' % (cres['description'], cres['pval'], cres['group1'], cres['group2']), color=ccolor)
+        # listwin.exec_()
+
+        # res = calour.analysis.annotation_enrichment(group1_seqs, group2_seqs, sequence_annotations)
+        res = calour.analysis.relative_enrichment(self.gui.exp, group1_seqs, sequence_annotations)
         logger.debug('Got %d enriched terms' % len(res))
         if len(res) == 0:
             QtWidgets.QMessageBox.information(self, "No enriched terms found", "No enriched annotations found when comparing\n%d selected sequences to %d other sequences" % (len(group1_seqs), len(group2_seqs)))
@@ -262,29 +273,28 @@ class ApplicationWindow(QMainWindow):
             listwin.add_item('%s - %f (selected %f, other %f) ' % (cname, cres['pval'], cres['group1'], cres['group2']), color=ccolor)
         listwin.exec_()
 
+    def double_click_annotation(self, item):
+        '''Show database information about the double clicked item in the list.
+
+        Call the appropriate database for displaying the info
+        '''
+        data = item.data(QtCore.Qt.UserRole)
+        db = data.get('_db_interface', None)
+        if db is None:
+            return
+        db.show_annotation_info(data)
+
     def annotate(self):
         '''Add database annotation to selected features
         '''
-        from calour.annotation import annotate_bacteria_gui
-
+        # get the database used to add annotation
+        if self.gui._annotation_db is None:
+            logger.warn('No database with add annotation capability selected (use plot(...,databases=[dbname])')
+            return
         # get the sequences of the selection
-        seqs = self.get_selected_seqs()
-        annotate_bacteria_gui(seqs, self.gui.exp)
-
-    def get_selected_seqs(self):
-        '''Get the list of selected sequences for the gui
-
-        Parameters
-        ----------
-
-        Returns
-        -------
-        seqs : list of str sequences ('ACGT')
-        '''
-        seqs = []
-        for cseqpos in self.gui.selected_features.keys():
-            seqs.append(self.gui.exp.feature_metadata.index[cseqpos])
-        return seqs
+        seqs = self.gui.get_selected_seqs()
+        # annotate
+        self.gui._annotation_db.add_annotation(seqs, self.gui.exp)
 
 
 class SListWindow(QtWidgets.QDialog):
@@ -320,7 +330,8 @@ class SListWindow(QtWidgets.QDialog):
     def add_item(self, text, color='black'):
         '''Add an item to the list
 
-        Parameters:
+        Parameters
+        ----------
         text : str
             the string to add
         color : str (optional)

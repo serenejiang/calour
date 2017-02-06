@@ -78,7 +78,7 @@ def plot(exp, sample_field=None, feature_field=None, max_features=1000,
         'cli' : just cli information about selected sample/feature.
         'qt5' : gui using QT5 (with full dbBact interface)
         'jupyter' : gui for Jupyter notebooks (using widgets)
-        Other string : name of child class of plotgui (which should reside in gui/lower(classname).py)
+        Other string : name of child class of plotgui (which should reside in heatmap/lower(classname).py)
     databases : list of str (optional)
         Names of the databases to use to obtain info about sequences. options:
         'dbbact' : the dbBact manual annotation database
@@ -111,24 +111,38 @@ def plot(exp, sample_field=None, feature_field=None, max_features=1000,
         gui = 'PlotGUI_Jupyter'
     else:
         raise ValueError('Unknown GUI specified: %r' % gui)
-    gui_module_name = 'calour.gui.' + gui.lower()
+    gui_module_name = 'calour.heatmap.' + gui.lower()
     gui_module = importlib.import_module(gui_module_name)
+    print('imported')
     # get the class
     GUIClass = getattr(gui_module, gui)
+    print('got class')
     hdat = GUIClass(exp)
-
+    print('created instance')
+    hdat._annotation_db = None
     for cdatabase in databases:
         if cdatabase == 'dbbact':
-            gui = 'DBBact'
+            db_name = 'DBBact'
+            db_module_name = 'dbbact_calour.dbbact'
+            db_module = importlib.import_module(db_module_name)
         elif cdatabase == 'spongeworld':
-            gui = 'DBSponge'
+            db_name = 'DBSponge'
         else:
             raise ValueError('Unknown Database specified: %r' % cdatabase)
-        gui_module_name = 'calour.database.' + gui.lower()
-        gui_module = importlib.import_module(gui_module_name)
+        # db_module_name = 'calour.database.' + db_name.lower()
+        # db_module = importlib.import_module(db_module_name)
+
         # get the class
-        DBClass = getattr(gui_module, gui)
-        hdat.databases.append(DBClass())
+        DBClass = getattr(db_module, db_name)
+        cdb = DBClass()
+        hdat.databases.append(cdb)
+
+        # select the database for use with the annotate button
+        if cdb.can_annotate():
+            if hdat._annotation_db is None:
+                hdat._annotation_db = cdb
+            else:
+                logger.warn('More than one database with annotation capability. Using first database (%s) for annotation' % hdat._annotation_db.get_name())
 
     # init the figure
     if axis is None:

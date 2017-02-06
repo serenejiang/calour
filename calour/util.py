@@ -155,7 +155,7 @@ def get_config_file():
     config_file_name : str
         the full path to the calour config file
     '''
-    config_file_name = resource_filename(__package__, 'config.calour.txt')
+    config_file_name = resource_filename(__package__, 'calour.config')
     return config_file_name
 
 
