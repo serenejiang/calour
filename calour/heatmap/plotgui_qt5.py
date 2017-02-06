@@ -10,7 +10,8 @@ from PyQt5.QtWidgets import (QMainWindow, QHBoxLayout, QVBoxLayout,
 from PyQt5.QtWidgets import QApplication
 
 from .plotgui import PlotGUI
-import calour.analysis
+from calour import analysis
+
 
 logger = getLogger(__name__)
 
@@ -233,45 +234,29 @@ class ApplicationWindow(QMainWindow):
         allseqs = self.gui.exp.feature_metadata.index.values
         group2_seqs = list(set(allseqs).difference(set(group1_seqs)))
 
-        logger.debug('Getting fast experiment annotations for %d sequences' % len(allseqs))
+        logger.debug('Getting experiment annotations for %d features' % len(allseqs))
         for cdb in self.gui.databases:
+            if not cdb.can_feature_terms():
+                continue
             logger.debug('Database: %s' % cdb.get_name())
             feature_terms = cdb.get_feature_terms(allseqs, self.gui.exp)
             logger.debug('got %d terms' % len(feature_terms))
-            res = calour.analysis.term_enrichment(group1_seqs, group2_seqs, feature_terms)
-
-        dbb = DBBact()
-        sequence_terms, sequence_annotations, annotations = dbb.get_seq_list_fast_annotations(allseqs)
-
-        # res = calour.analysis.term_enrichment(group1_seqs, group2_seqs, sequence_terms)
-        # logger.debug('Got %d enriched terms' % len(res))
-        # if len(res) == 0:
-        #     QtWidgets.QMessageBox.information(self, "No enriched terms found", "No enriched annotations found when comparing\n%d selected sequences to %d other sequences" % (len(group1_seqs), len(group2_seqs)))
-        #     return
-        # listwin = SListWindow(listname='enriched ontology terms')
-        # for cres in res:
-        #     if cres['group1'] > cres['group2']:
-        #         ccolor = 'blue'
-        #     else:
-        #         ccolor = 'red'
-        #     listwin.add_item('%s - %f (selected %d, other %d) ' % (cres['description'], cres['pval'], cres['group1'], cres['group2']), color=ccolor)
-        # listwin.exec_()
-
-        # res = calour.analysis.annotation_enrichment(group1_seqs, group2_seqs, sequence_annotations)
-        res = calour.analysis.relative_enrichment(self.gui.exp, group1_seqs, sequence_annotations)
-        logger.debug('Got %d enriched terms' % len(res))
-        if len(res) == 0:
-            QtWidgets.QMessageBox.information(self, "No enriched terms found", "No enriched annotations found when comparing\n%d selected sequences to %d other sequences" % (len(group1_seqs), len(group2_seqs)))
-            return
-        listwin = SListWindow(listname='enriched ontology terms')
-        for cres in res:
-            if cres['group1'] > cres['group2']:
-                ccolor = 'blue'
-            else:
-                ccolor = 'red'
-            cname = dbb.get_annotation_string(annotations[cres['description']])
-            listwin.add_item('%s - %f (selected %f, other %f) ' % (cname, cres['pval'], cres['group1'], cres['group2']), color=ccolor)
-        listwin.exec_()
+            res = analysis.relative_enrichment(self.gui.exp, group1_seqs, feature_terms)
+            logger.debug('Got %d enriched terms' % len(res))
+            if len(res) == 0:
+                QtWidgets.QMessageBox.information(self, "No enriched terms found",
+                                                  "No enriched annotations found when comparing\n%d selected sequences to %d "
+                                                  "other sequences" % (len(group1_seqs), len(group2_seqs)))
+                return
+            listwin = SListWindow(listname='enriched ontology terms')
+            for cres in res:
+                if cres['group1'] > cres['group2']:
+                    ccolor = 'blue'
+                else:
+                    ccolor = 'red'
+                cname = cres['description']
+                listwin.add_item('%s - %f (selected %f, other %f) ' % (cname, cres['pval'], cres['group1'], cres['group2']), color=ccolor)
+            listwin.exec_()
 
     def double_click_annotation(self, item):
         '''Show database information about the double clicked item in the list.

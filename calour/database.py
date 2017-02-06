@@ -4,7 +4,7 @@ logger = getLogger(__name__)
 
 
 class Database:
-    def __init__(self, database_name='generic', methods=['get', 'annotate']):
+    def __init__(self, database_name='generic', methods=['get', 'annotate', 'feature_terms']):
         '''Initialize the database interface
 
         Parameters
@@ -14,6 +14,7 @@ class Database:
         methods : list of str (optional)
             'get' if database interface supports get_seq_annotation_strings()
             'annotate' if database interface supports add_annotation()
+            'enrichment' if database interface supports get_feature_terms()
         '''
         self._database_name = database_name
         self._methods = set(methods)
@@ -34,6 +35,9 @@ class Database:
 
     def can_get(self):
         return 'get' in self._methods
+
+    def can_feature_terms(self):
+        return 'feature_terms' in self._methods
 
     def get_seq_annotation_strings(self, sequence):
         '''Get nice string summaries of annotations for a given sequence

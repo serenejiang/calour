@@ -242,3 +242,16 @@ def is_sample_v4(exp, region_seq='TACG', frac_have=0.4, min_reads=10):
     ok_samples = np.where(frac_ok >= frac_have)[0]
     bad_samples = np.where(frac_ok < frac_have)[0]
     return list(newexp.sample_metadata.index[ok_samples]), list(newexp.sample_metadata.index[bad_samples])
+
+
+def set_log_level(level):
+    '''Set the debug level for calour
+
+    Parameters
+    ----------
+    level : int
+        10 for debug, 20 for info, 30 for warn, etc.
+    '''
+
+    clog = getLogger('calour')
+    clog.setLevel(level)
