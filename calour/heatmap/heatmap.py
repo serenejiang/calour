@@ -113,13 +113,11 @@ def plot(exp, sample_field=None, feature_field=None, max_features=1000,
         raise ValueError('Unknown GUI specified: %r' % gui)
     gui_module_name = 'calour.heatmap.' + gui.lower()
     gui_module = importlib.import_module(gui_module_name)
-    print('imported')
     # get the class
     GUIClass = getattr(gui_module, gui)
-    print('got class')
     hdat = GUIClass(exp)
-    print('created instance')
     hdat._annotation_db = None
+
     # link with the databases requested
     for cdatabase in databases:
         if cdatabase == 'dbbact':
@@ -137,7 +135,6 @@ def plot(exp, sample_field=None, feature_field=None, max_features=1000,
         DBClass = getattr(db_module, db_name)
         cdb = DBClass()
         hdat.databases.append(cdb)
-
         # select the database for use with the annotate button
         if cdb.can_annotate():
             if hdat._annotation_db is None:
