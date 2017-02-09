@@ -104,41 +104,42 @@ def get_annotation_count(seqs, sequence_annotations):
     return seq_annotations
 
 
-def get_term_features(seqs, sequence_annotations):
-    '''Get dict of number of appearances in each sequence keyed by term
+def get_term_features(features, feature_annotations):
+    '''Get dict of number of appearances in each feature keyed by term
 
     Parameters
     ----------
-    seqs : list of str
-        A list of DNA sequences
-    sequence_annotations : dict of (sequence, list of ontology terms)
+    features : list of str
+        A list of features
+    feature_annotations : dict of (sequence, list of ontology terms)
         from dbbact.get_seq_list_fast_annotations()
 
     Returns
     -------
-    seq_annotations : dict of (ontology_term : num per sequence)
-        number of times each ontology term appears in each sequence in seqs
+    term_features : dict of (ontology_term : list of num per feature)
+        number of times each term appears in each feature from features
     '''
     # get all terms
     terms = set()
-    for ctermlist in sequence_annotations.values():
+    for ctermlist in feature_annotations.values():
         for cterm in ctermlist:
             terms.add(cterm)
 
-    seq_annotations = {}
+    term_features = {}
     for cterm in terms:
-        seq_annotations[cterm] = np.zeros([len(seqs)])
+        term_features[cterm] = np.zeros([len(features)])
 
     num_seqs_no_annotations = 0
-    for idx, cseq in enumerate(seqs):
-        if cseq not in sequence_annotations:
+    for idx, cseq in enumerate(features):
+        if cseq not in feature_annotations:
             num_seqs_no_annotations += 1
             continue
-        for cterm in sequence_annotations[cseq]:
-            seq_annotations[cterm][idx] += 1
+        for cterm in feature_annotations[cseq]:
+            term_features[cterm][idx] += 1
     if num_seqs_no_annotations > 0:
-        logger.warn('found %d sequences with no annotations out of %d' % (num_seqs_no_annotations, len(seqs)))
-    return seq_annotations
+        logger.warn('found %d sequences with no annotations out of %d' % (num_seqs_no_annotations, len(features)))
+    logger.debug('found %d unique terms' % len(term_features))
+    return term_features
 
 
 def annotation_enrichment(seqs1, seqs2, sequence_annotations):
@@ -257,7 +258,9 @@ def term_enrichment(seqs1, seqs2, sequence_terms):
     pv = []
     for cterm in all_terms:
         # t, p = stats.ranksums(group1_terms[cterm], group2_terms[cterm])
-        t, p = stats.mannwhitneyu(group1_terms[cterm]+np.random.normal(size=len(group1_terms[cterm]))*0.001, group2_terms[cterm]+np.random.normal(size=len(group2_terms[cterm]))*0.001, alternative='two-sided')
+        t, p = stats.mannwhitneyu(group1_terms[cterm]+np.random.normal(size=len(group1_terms[cterm]))*0.001,
+                                  group2_terms[cterm]+np.random.normal(size=len(group2_terms[cterm]))*0.001,
+                                  alternative='two-sided')
         # store the result
         allp.append(p)
         cpv = {}
@@ -294,6 +297,10 @@ def term_enrichment(seqs1, seqs2, sequence_terms):
 def relative_enrichment(exp, features, feature_terms):
     '''Get the list of enriched terms in features compared to all features in exp, given uneven distribtion of number of terms per feature
 
+    Use (two sided) binomial test (with features/all other features in exp as the two groups). We assume each group gets the total number of tries
+    similar to the number of terms observed in this group and then test for each term if it is enriched in specific terms. We then apply
+    BH-FDR to correct for multiple term testing.
+
     Parameters
     ----------
     exp : calour.Experiment
@@ -306,6 +313,17 @@ def relative_enrichment(exp, features, feature_terms):
             the feature (out of exp) to which the terms relate
         feature_terms (value) : list of str or int
             the terms associated with this feature
+
+    returns
+    -------
+    newplist : list of dict
+        The information about each significant term. each item is for a term. includes:
+        'pval' : float -  the p-value for the term enrichment
+        'observed' : int - the number of observations of the term in group1 (features)
+        'expected' : float - the number of expected observations of the term in group1 based on null hypothesis
+        'group1' : float - the fraction of the observations of term in group1 (features)
+        'group2' : float - the fraction of the observations of term in group2 (background from exp)
+        'description' : str - the name of the term
     '''
     all_features = set(exp.feature_metadata.index.values)
     bg_features = list(all_features.difference(features))
@@ -356,7 +374,7 @@ def relative_enrichment(exp, features, feature_terms):
     for cidx in keep:
         plist.append(pv[cidx])
         rat.append(np.abs(float(pv[cidx]['observed'] - pv[cidx]['expected'])) / np.mean([pv[cidx]['observed'], pv[cidx]['expected']]))
-    print('found %d' % len(keep))
+    logger.info('found %d significant terms' % len(keep))
     si = np.argsort(rat)
     si = si[::-1]
     newplist = []
