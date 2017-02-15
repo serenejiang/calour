@@ -56,11 +56,8 @@ class Experiment:
         metadata about the experiment (data md5, filenames, etc.)
     shape : tuple of (int, int)
         the dimension of data
-<<<<<<< HEAD
-=======
     sparse : bool
         store the data as sparse matrix (scipy.sparse.csr_matrix) or numpy array.
->>>>>>> 1aa19c08aa61d9f8ba8365c1bf09835bc940b3f4
     description : str
         name of the experiment
     '''
