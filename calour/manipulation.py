@@ -15,7 +15,7 @@ import numpy as np
 logger = getLogger(__name__)
 
 
-def join_fields(exp, field1, field2, newname, separator='-', inplace=True):
+def join_fields(exp, field1, field2, newname=None, axis=0, separator='_', inplace=True):
     '''Join two sample metadata fields into a single new field
 
     Parameters
@@ -27,10 +27,12 @@ def join_fields(exp, field1, field2, newname, separator='-', inplace=True):
     newname : str or None (optional)
         name of the new (joined) sample metadata field
         None (default) to name it as field1-field2
-    inplace : bool (optional)
-        True (default) to add in current experiment, False to create a new Experiment
+    axis : int
+        0 (default) to modify sample metadata fields, 1 to modify feature metadata fields
     separator : str (optional)
         The separator between the values of the two fields when joining
+    inplace : bool (optional)
+        True (default) to add in current experiment, False to create a new Experiment
 
     Returns
     -------
@@ -43,10 +45,17 @@ def join_fields(exp, field1, field2, newname, separator='-', inplace=True):
     else:
         newexp = deepcopy(exp)
 
+    if axis == 0:
+        metadata = newexp.sample_metadata
+    elif axis == 1:
+        metadata = newexp.feature_metadata
+    else:
+        raise ValueError('incorrect axis %s. please use 0/1' % axis)
+
     # validate the data
-    if field1 not in newexp.sample_metadata.columns:
+    if field1 not in metadata.columns:
         raise ValueError('field %s not in sample metadata' % field1)
-    if field2 not in newexp.sample_metadata.columns:
+    if field2 not in metadata.columns:
         raise ValueError('field %s not in sample metadata' % field2)
 
     # get the new column name
@@ -54,8 +63,11 @@ def join_fields(exp, field1, field2, newname, separator='-', inplace=True):
         newname = field1 + separator + field2
 
     # add the new column
-    newcol = exp.sample_metadata[field1].str.cat(exp.sample_metadata[field2].astype(str), sep=separator)
-    newexp.sample_metadata[newname] = newcol
+    newcol = metadata[field1].str.cat(metadata[field2].astype(str), sep=separator)
+    if axis == 0:
+        newexp.sample_metadata[newname] = newcol
+    else:
+        newexp.feature_metadata[newname] = newcol
 
     return newexp
 
@@ -88,17 +100,26 @@ def add_observation(exp, obs_id, data=None):
     '''
 
 
-def join_experiments(exp, other, orig_field_name='orig_exp', orig_field_values=None, prefixes=None):
+def join_experiments(exp, other, orig_field_name='orig_exp', prefixes=None):
     '''Join two Experiment objects into one.
-
-    If suffix is not none, add suffix to each sampleid (suffix is a
-    list of 2 values i.e. ('_1','_2')) if same feature id in both
-    studies, use values, otherwise put 0 in values of experiment where
-    the observation in not present
 
     Parameters
     ----------
-    exp, other : Experiments to join
+    exp, other : ``Experiment``
+        The experiments to join.
+        If both experiments contain the same feature metadata column, the value will be taken from
+        exp and not from other.
+    orig_field_name : str (optional)
+        Name of the new ``sample_metdata`` field containing the experiment each sample is coming from
+    prefixes : tuple of (str,str) (optional)
+        Prefix to append to the sample_metadata index for identical samples in the 2 experiments.
+        Required only if the two experiments share an identical sample name
+
+    Returns
+    -------
+    ``Experiment``
+        A new experiment with samples from both experiments concatenated, features from both
+        experiments merged.
     '''
     logger.debug('Join experiments:\n{!r}\n{!r}'.format(exp, other))
     newexp = deepcopy(exp)
@@ -122,6 +143,7 @@ def join_experiments(exp, other, orig_field_name='orig_exp', orig_field_values=N
         exp_sample_metadata = exp.sample_metadata
         other_sample_metadata = other.sample_metadata
 
+    # concatenate the sample_metadata
     sample_metadata = pd.concat([exp_sample_metadata, other_sample_metadata], join='outer', )
     if orig_field_name is not None:
         sample_metadata[orig_field_name] = np.nan
@@ -129,9 +151,11 @@ def join_experiments(exp, other, orig_field_name='orig_exp', orig_field_values=N
         sample_metadata.loc[other_sample_metadata.index.values, orig_field_name] = other.description
     newexp.sample_metadata = sample_metadata
 
+    # and store the positions of samples from each experiment in the new samples list
     sample_pos_exp = [sample_metadata.index.get_loc(csamp) for csamp in exp_sample_metadata.index.values]
     sample_pos_other = [sample_metadata.index.get_loc(csamp) for csamp in other_sample_metadata.index.values]
 
+    # merge the features
     feature_metadata = exp.feature_metadata.merge(other.feature_metadata, how='outer', left_index=True, right_index=True, suffixes=('', '__tmp_other'))
     # merge and remove duplicate columns
     keep_cols = []
@@ -144,6 +168,7 @@ def join_experiments(exp, other, orig_field_name='orig_exp', orig_field_values=N
     feature_metadata = feature_metadata[keep_cols]
     newexp.feature_metadata = feature_metadata
 
+    # join the data of the two experiments, putting 0 if feature is not in an experiment
     all_features = feature_metadata.index.values
     all_data = np.zeros([len(sample_metadata), len(all_features)])
     data_exp = exp.get_data(sparse=False)
