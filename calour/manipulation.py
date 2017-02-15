@@ -51,7 +51,7 @@ def join_fields(exp, field1, field2, newname, separator='-', inplace=True):
 
     # get the new column name
     if newname is None:
-        newname = '%s-%s' % (field1, field2)
+        newname = field1 + separator + field2
 
     # add the new column
     newcol = exp.sample_metadata[field1].str.cat(exp.sample_metadata[field2].astype(str), sep=separator)
