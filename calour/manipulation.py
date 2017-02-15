@@ -15,7 +15,7 @@ import numpy as np
 logger = getLogger(__name__)
 
 
-def join_fields(exp, field1, field2, newname, separator='-', inplace=False):
+def join_fields(exp, field1, field2, newname, separator='-', inplace=True):
     '''Join two sample metadata fields into a single new field
 
     Parameters
@@ -28,7 +28,7 @@ def join_fields(exp, field1, field2, newname, separator='-', inplace=False):
         name of the new (joined) sample metadata field
         None (default) to name it as field1-field2
     inplace : bool (optional)
-        False (default) to create a new Experiment, True to add in current experiment
+        True (default) to add in current experiment, False to create a new Experiment
     separator : str (optional)
         The separator between the values of the two fields when joining
 
