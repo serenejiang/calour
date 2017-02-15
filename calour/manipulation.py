@@ -54,13 +54,16 @@ def join_fields(exp, field1, field2, newname=None, axis=0, separator='_', inplac
 
     # validate the data
     if field1 not in metadata.columns:
-        raise ValueError('field %s not in sample metadata' % field1)
+        raise ValueError('field %s not in metadata' % field1)
     if field2 not in metadata.columns:
-        raise ValueError('field %s not in sample metadata' % field2)
+        raise ValueError('field %s not in metadata' % field2)
 
     # get the new column name
     if newname is None:
         newname = field1 + separator + field2
+
+    if newname in metadata.columns:
+        raise ValueError('new field name %s alreay in metadata. Please use different newname value' % newname)
 
     # add the new column
     newcol = metadata[field1].str.cat(metadata[field2].astype(str), sep=separator)
