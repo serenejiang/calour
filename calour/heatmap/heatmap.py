@@ -73,9 +73,10 @@ def plot(exp, sample_field=None, feature_field=None, max_features=1000,
         None (default) to use mpl default color map. str to use colormap named str.
     title : None or str (optional)
         None (default) to show experiment description field as title. str to set title to str.
-    gui : str (optional)
-        Name of the gui module to use for displaying the heatmap. options:
-        'cli' : just cli information about selected sample/feature.
+    gui : str or None (optional)
+        If None, just plot a simple matplotlib figure with the heatmap and no interactive elements.
+        is str, name of the gui module to use for displaying the heatmap. options:
+        'cli' (default) : just cli information about selected sample/feature.
         'qt5' : gui using QT5 (with full dbBact interface)
         'jupyter' : gui for Jupyter notebooks (using widgets)
         Other string : name of child class of plotgui (which should reside in heatmap/lower(classname).py)
