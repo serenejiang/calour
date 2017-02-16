@@ -75,6 +75,8 @@ class Experiment:
 
         # flag if data array is sparse (True) or dense (False)
         self.sparse = sparse
+        self.sample_metadata['_calour_read_count'] = self.data.sum(axis=1)
+        self.feature_metadata['_calour_read_count'] = self.data.sum(axis=0)
 
     @property
     def sparse(self):

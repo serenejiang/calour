@@ -167,7 +167,6 @@ def read_open_ms(data_file, sample_metadata_file=None, feature_metadata_file=Non
     exp = read(data_file, sample_metadata_file, feature_metadata_file,
                data_file_type='openms', sparse=False, **kwargs)
     # record the original total read count into sample metadata
-    exp.sample_metadata['_calour_read_count'] = exp.data.sum(axis=1)
     if normalize:
         exp.normalize(inplace=True, total=rescale)
     elif rescale:
@@ -214,7 +213,6 @@ def read_taxa(data_file, sample_metadata_file=None,
         exp.filter_by_data('sum_abundance', cutoff=filter_orig_reads, inplace=True)
     if normalize:
         # record the original total read count into sample metadata
-        exp.sample_metadata['_calour_read_count'] = exp.data.sum(axis=1)
         exp.normalize(inplace=True)
     return exp
 
