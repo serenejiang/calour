@@ -66,7 +66,7 @@ def join_fields(exp, field1, field2, newname=None, axis=0, separator='_', inplac
         raise ValueError('new field name %s alreay in metadata. Please use different newname value' % newname)
 
     # add the new column
-    newcol = metadata[field1].str.cat(metadata[field2].astype(str), sep=separator)
+    newcol = metadata[field1].astype(str).str.cat(metadata[field2].astype(str), sep=separator)
     if axis == 0:
         newexp.sample_metadata[newname] = newcol
     else:

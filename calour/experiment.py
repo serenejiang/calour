@@ -75,8 +75,10 @@ class Experiment:
 
         # flag if data array is sparse (True) or dense (False)
         self.sparse = sparse
+
+        # remeber how many reads per sample/feature before any procesing
         self.sample_metadata['_calour_read_count'] = self.data.sum(axis=1)
-        self.feature_metadata['_calour_read_count'] = self.data.sum(axis=0)
+        # self.feature_metadata['_calour_read_count'] = self.data.sum(axis=0)
 
     @property
     def sparse(self):
@@ -276,7 +278,8 @@ class Experiment:
         elif axis == 1:
             exp.data = exp.data[:, new_order]
             exp.feature_metadata = exp.feature_metadata.iloc[new_order, :]
-
+        else:
+            raise ValueError('axis %s unknown' % axis)
         return exp
 
 
