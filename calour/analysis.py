@@ -97,10 +97,9 @@ def diff_abundance(exp, field, val1=None, val2=None, method='meandiff', transfor
     if len(keep[0]) == 0:
         logger.warn('no significant features found')
         return None
-
     newexp = exp.reorder(keep[0], axis=1)
     odif = odif[keep[0]]
-    pvals = odif[keep[0]]
+    pvals = pvals[keep[0]]
     si = np.argsort(odif, kind='mergesort')
     odif = odif[si]
     pvals = pvals[si]
