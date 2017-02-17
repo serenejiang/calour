@@ -16,23 +16,6 @@ import scipy
 logger = getLogger(__name__)
 
 
-def get_fields(exp):
-    '''
-    return the sample fields of an experiment
-    '''
-    return list(exp.sample_metadata.columns)
-
-
-def get_field_vals(exp, field, unique=True):
-    '''
-    return the values in sample field (unique or all)
-    '''
-    vals = exp.sample_metadata[field]
-    if unique:
-        vals = list(set(vals))
-    return vals
-
-
 def _get_taxonomy_string(exp, separator=';', remove_underscore=True, to_lower=False):
     '''Get a nice taxonomy string
     Convert the taxonomy list stored (from biom.read_table) to a single string per feature
@@ -62,7 +45,7 @@ def _get_taxonomy_string(exp, separator=';', remove_underscore=True, to_lower=Fa
 
     # if it is not a list - just return it
     if not isinstance(exp.feature_metadata['taxonomy'][0], list):
-        return exp.feature_metadata['taxonomy']
+        return list(exp.feature_metadata['taxonomy'].values)
 
     if not remove_underscore:
         taxonomy = [separator.join(x) for x in exp.feature_metadata['taxonomy']]
@@ -172,7 +155,7 @@ def set_config_value(key, value, section='DEFAULT', config_file_name=None):
     section : str (optional)
         the section to get the value from
     config_file_name : str (optional)
-        the full path to the config file or None to use XXX
+        the full path to the config file or None to use default config file
     '''
     if config_file_name is None:
         config_file_name = get_config_file()
@@ -199,7 +182,7 @@ def get_config_value(key, fallback=None, section='DEFAULT', config_file_name=Non
     section : str (optional)
         the section to get the value from
     config_file_name : str (optional)
-        the full path to the config file or None to use XXX
+        the full path to the config file or None to use default config file
 
     Returns
     -------
