@@ -89,7 +89,7 @@ def _read_openms_csv(fp, transpose=True):
     sid = table.columns[1:]
     oid = table[sample_id_col].values
     logger.info('loaded %d samples, %d observations' % (len(sid), len(oid)))
-    data = table.values[:, 1:]
+    data = table.values[:, 1:].astype(float)
     feature_md = pd.DataFrame(index=oid)
 
     if transpose:
@@ -166,7 +166,7 @@ def read_open_ms(data_file, sample_metadata_file=None, feature_metadata_file=Non
     '''
     logger.info('Reading OpenMS data (OpenMS bucket table %s, map file %s)' % (data_file, sample_metadata_file))
     exp = read(data_file, sample_metadata_file, feature_metadata_file,
-               data_file_type='openms', sparse=False, **kwargs)
+               data_file_type='openms', sparse=sparse, **kwargs)
     # record the original total read count into sample metadata
     if normalize:
         exp.normalize(inplace=True, total=rescale)
@@ -329,6 +329,8 @@ def save_biom(exp, f, fmt='hdf5', addtax=True):
         with open(f, 'w') as f:
             tab.to_json("calour", f)
     elif fmt == 'txt':
+        if addtax:
+            logger.warning('.txt format does not support taxonomy information in save. Saving without taxonomy.')
         s = tab.to_tsv()
         with open(f, 'w') as f:
             f.write(s)
