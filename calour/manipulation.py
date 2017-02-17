@@ -138,10 +138,10 @@ def join_experiments(exp, other, orig_field_name='orig_exp', prefixes=None):
             logger.info('both experiments contain same sample id')
             exp_sample_metadata = exp.sample_metadata.copy()
             other_sample_metadata = other.sample_metadata.copy()
-            exp_sample_metadata.index = ['{}_{!s}'.format(exp_prefix, i)
-                                         for i in exp_sample_metadata.index]
-            other_sample_metadata.index = ['{}_{!s}'.format(other_prefix, i)
-                                           for i in other_sample_metadata.index]
+            if exp_prefix:
+                exp_sample_metadata.rename_axis(lambda x: '{}_{!s}'.format(exp_prefix, x), inplace=True)
+            if other_prefix:
+                other_sample_metadata.rename_axis(lambda x: '{}_{!s}'.format(other_prefix, x), inplace=True)
     else:
         exp_sample_metadata = exp.sample_metadata
         other_sample_metadata = other.sample_metadata
