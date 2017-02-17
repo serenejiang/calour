@@ -35,8 +35,6 @@ class IOTests(Tests):
         newexp = self.simple.join_experiments(texp, prefixes=('c1', ''))
         self.assertEqual(len(newexp.feature_metadata), len(self.simple.feature_metadata))
         self.assertEqual(len(newexp.sample_metadata), len(self.simple.sample_metadata)*2)
-        print('newexp: %s' % newexp.sample_metadata.index.name)
-        print('old: %s' % texp.sample_metadata.index.name)
         fexp = newexp.filter_samples('orig_exp', 't2')
         assert_experiment_equal(fexp, texp, ignore_md_fields=['orig_exp'])
 

@@ -191,7 +191,7 @@ def _key_press_callback(event, hdat):
         x_offset = xlim_upper - xlim_lower
         y_offset = ylim_upper - ylim_lower
 
-    if event.key in ['shift+up', 'up+shift', '=']:
+    if event.key == 'shift+up' or event.key == '=':
         ax.set_ylim(
             ylim_lower,
             ylim_lower + (ylim_upper - ylim_lower) / hdat.zoom_scale)
