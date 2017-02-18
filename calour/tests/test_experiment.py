@@ -7,6 +7,7 @@
 # ----------------------------------------------------------------------------
 
 from unittest import main
+from copy import copy, deepcopy
 
 import numpy as np
 
@@ -101,6 +102,12 @@ class ExperimentTests(Tests):
         new.reorder(rev_perm_samples, axis=0, inplace=True)
 
         assert_experiment_equal(new, exp)
+
+    def test_copy_experiment(self):
+        exp = copy(self.test1)
+        assert_experiment_equal(exp, self.test1)
+        exp = deepcopy(self.test1)
+        assert_experiment_equal(exp, self.test1)
 
 
 if __name__ == "__main__":
