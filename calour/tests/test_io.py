@@ -146,5 +146,17 @@ class IOTests(Tests):
         assert_experiment_equal(newexp, exp, ignore_md_fields=['taxonomy'])
         shutil.rmtree(d)
 
+    def test_save(self):
+        exp = ca.read(self.test1_biom, self.test1_samp)
+        d = mkdtemp()
+        f = join(d, 'test1.save')
+        # test the json biom format
+        exp.save(f, fmt='json')
+        newexp = ca.read(f+'.biom', f+'_sample.txt')
+        print(newexp.sample_metadata)
+        print(newexp.feature_metadata)
+        assert_experiment_equal(newexp, exp, ignore_md_fields=['#SampleID.1'])
+        shutil.rmtree(d)
+
 if __name__ == "__main__":
     main()
