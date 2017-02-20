@@ -27,6 +27,7 @@ class IOTests(Tests):
         # test we didn't change anything besides the new sample metadata column
         assert_experiment_equal(newexp, self.test1, ignore_md_fields=['id_group'])
 
+    def test_join_fields_complex(self):
         # test join feature fields with new field name, separator and inplace
         exp = deepcopy(self.test1)
         exp.join_fields('taxonomy', 'taxonomy', newname='test', axis=1, separator=';', inplace=True)

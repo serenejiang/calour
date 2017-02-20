@@ -177,11 +177,10 @@ def read_open_ms(data_file, sample_metadata_file=None, feature_metadata_file=Non
     logger.info('Reading OpenMS data (OpenMS bucket table %s, map file %s)' % (data_file, sample_metadata_file))
     exp = read(data_file, sample_metadata_file, feature_metadata_file,
                data_file_type='openms', sparse=sparse, **kwargs)
-    # record the original total read count into sample metadata
     if normalize:
         exp.normalize(inplace=True, total=rescale)
     elif rescale:
-        exp.normalize(inplace=True, total=rescale)
+        exp.rescale(inplace=True, total=rescale)
 
     exp.sample_metadata['id'] = exp.sample_metadata.index.values
 

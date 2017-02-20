@@ -110,7 +110,7 @@ class ExperimentTests(Tests):
         exp = deepcopy(self.test1)
         assert_experiment_equal(exp, self.test1)
 
-    def test_get_data(self):
+    def test_get_data_default(self):
         # default - do not modify the data
         exp = deepcopy(self.test1)
         data = exp.get_data()
@@ -120,6 +120,7 @@ class ExperimentTests(Tests):
         data[0, 0] = -1000
         self.assertEqual(data.sum(), exp.data.sum())
 
+    def test_get_data_copy(self):
         # lets force it to copy
         exp = deepcopy(self.test1)
         data = exp.get_data(copy=True)
@@ -129,6 +130,7 @@ class ExperimentTests(Tests):
         data[0, 0] = -1000
         self.assertNotEqual(data.sum(), exp.data.sum())
 
+    def test_get_data_non_sparse(self):
         # force non-sparse, should copy
         exp = deepcopy(self.test1)
         data = exp.get_data(sparse=False)
@@ -138,6 +140,7 @@ class ExperimentTests(Tests):
         data[0, 0] = -1000
         self.assertNotEqual(data.sum(), exp.data.sum())
 
+    def test_get_data_sparse(self):
         # force sparse, should not copy
         exp = deepcopy(self.test1)
         data = exp.get_data(sparse=True)
@@ -147,6 +150,7 @@ class ExperimentTests(Tests):
         data[0, 0] = -1000
         self.assertEqual(data.sum(), exp.data.sum())
 
+    def test_get_data_sparse_copy(self):
         # force sparse on a non-sparse matrix
         exp = deepcopy(self.test1)
         exp.sparse = False
@@ -156,7 +160,6 @@ class ExperimentTests(Tests):
         # test it's not a copy but inplace
         data[0, 0] = -1000
         self.assertNotEqual(data.sum(), exp.data.sum())
-
 
 if __name__ == "__main__":
     main()

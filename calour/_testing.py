@@ -43,7 +43,7 @@ def assertIsInstance(obj, cls, msg=''):
         raise AssertionError(err_msg.format(msg, cls, type(obj)))
 
 
-def assert_experiment_equal(exp1, exp2, check_history=False, almost_equal=True, ignore_md_fields=['_calour_read_count']):
+def assert_experiment_equal(exp1, exp2, check_history=False, almost_equal=True, ignore_md_fields=('_calour_original_abundance',)):
     '''Test if two experiments are equal
 
     Parameters
@@ -54,7 +54,7 @@ def assert_experiment_equal(exp1, exp2, check_history=False, almost_equal=True, 
         False (default) to skip testing the command history, True to compare also the command history
     almost_equal : bool (optional)
         True (default) to test for almost identical, False to test the data matrix for exact identity
-    ignore_md_fields : list of str or None
+    ignore_md_fields : tuple of str or None
         list of metadata fields to ignore in the comparison. Default is ignoring the original read count (when sample loaded)
     '''
     assertIsInstance(exp1, ca.Experiment, 'exp1 not a calour Experiment class')
