@@ -69,7 +69,6 @@ def assert_experiment_equal(exp1, exp2, check_history=False, almost_equal=True, 
                 sample_columns = sample_columns.delete(sample_columns.get_loc(cignore))
             if cignore in feature_columns:
                 feature_columns = feature_columns.delete(feature_columns.get_loc(cignore))
-    # test experiments contain the same columns after the ignore list
     assert(len(sample_columns.difference(exp1.sample_metadata.columns)) == 0)
     assert(len(sample_columns.difference(exp2.sample_metadata.columns)) == 0)
     assert(len(feature_columns.difference(exp1.feature_metadata.columns)) == 0)
