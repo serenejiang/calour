@@ -68,20 +68,25 @@ def _get_taxonomy_string(exp, separator=';', remove_underscore=True, to_lower=Fa
     return taxonomy
 
 
-def get_file_md5(filename):
+def get_file_md5(filename, encoding='utf-8'):
     '''get the md5 of the text file.
 
     Parameters
     ----------
     filename : str
         name of the file to calculate md5 on
+    encoding : str or None (optional)
+        encoding of the text file (see python str.encode() ). None to use 'utf-8'
 
     Returns
     -------
     flmd5: str
         the md5 of the file filename
     '''
-    with open(filename, 'r') as fl:
+    logger.debug('getting file md5 for file %s' % filename)
+    if encoding is None:
+        encoding = 'utf-8'
+    with open(filename, 'r', encoding=encoding) as fl:
         flmd5 = hashlib.md5()
         for cline in fl:
             try:
@@ -90,6 +95,7 @@ def get_file_md5(filename):
                 logger.warn('map md5 cannot be calculated - utf problems?')
                 return ''
         flmd5 = flmd5.hexdigest()
+        logger.debug('md5 is %s' % flmd5)
         return flmd5
 
 
