@@ -87,7 +87,7 @@ def filter_min_reads(exp, minreads, **kwargs):
 def filter_orig_reads(exp, minreads, **kwargs):
     ''' filter keeping only samples with >= minreads
     '''
-    origread_field = '_calour_read_count'
+    origread_field = '_calour_original_abundance'
     if origread_field not in exp.sample_metadata.columns:
         raise ValueError('%s field not initialzed. Did you load the data with calour.read_taxa() ?' % origread_field)
 
@@ -106,8 +106,6 @@ def filter_prevalence(exp, fraction=0.5, cutoff=1/10000, **kwargs):
 def filter_mean(exp, cutoff=0.01, **kwargs):
     ''' filter sequences with a mean at least cutoff
     '''
-    if '_calour_read_count' not in exp.sample_metadata.columns:
-        print('no original read count - cannot filter the mean')
     factor = np.mean(exp.data.sum(axis=1))
     newexp = exp.filter_by_data('mean_abundance', axis=1, cutoff=cutoff * factor, **kwargs)
     return newexp
