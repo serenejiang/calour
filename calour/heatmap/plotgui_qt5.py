@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import (QMainWindow, QHBoxLayout, QVBoxLayout,
                              QLabel, QListWidget, QSplitter, QFrame,
                              QComboBox, QScrollArea, QListWidgetItem,
                              QDialogButtonBox, QApplication)
+from PyQt5.QtCore import Qt
 
 from .plotgui import PlotGUI
 from .. import analysis
@@ -144,6 +145,7 @@ class ApplicationWindow(QMainWindow):
         lbox = QHBoxLayout()
         self.w_sfield = QComboBox()
         self.w_sfield_val = QLabel(text='NA')
+        self.w_sfield_val.setTextInteractionFlags(Qt.TextSelectableByMouse)
         scroll = QScrollArea()
         scroll.setFixedHeight(18)
         self.w_sfield_val.setMinimumWidth(scroll_box_width)
@@ -158,6 +160,7 @@ class ApplicationWindow(QMainWindow):
         lbox = QHBoxLayout()
         self.w_ffield = QComboBox()
         self.w_ffield_val = QLabel(text='NA')
+        self.w_ffield_val.setTextInteractionFlags(Qt.TextSelectableByMouse)
         scroll = QScrollArea()
         scroll.setFixedHeight(18)
         self.w_ffield_val.setMinimumWidth(scroll_box_width)
@@ -174,6 +177,7 @@ class ApplicationWindow(QMainWindow):
         scroll = QScrollArea()
         scroll.setFixedHeight(18)
         self.w_sid = QLabel(text='?')
+        self.w_sid.setTextInteractionFlags(Qt.TextSelectableByMouse)
         self.w_sid.setMinimumWidth(scroll_box_width)
         scroll.setWidget(self.w_sid)
         lbox.addWidget(label)
@@ -185,6 +189,7 @@ class ApplicationWindow(QMainWindow):
         scroll = QScrollArea()
         scroll.setFixedHeight(18)
         self.w_fid = QLabel(text='?')
+        self.w_fid.setTextInteractionFlags(Qt.TextSelectableByMouse)
         self.w_fid.setMinimumWidth(scroll_box_width)
         scroll.setWidget(self.w_fid)
         lbox.addWidget(label)

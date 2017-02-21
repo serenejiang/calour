@@ -256,7 +256,7 @@ def heatmap(exp, sample_field=None, feature_field=None, yticklabels_max=100,
     return fig
 
 
-def plot(exp, gui, databases=('dbbact',), **kwargs):
+def plot(exp, gui='cli', databases=('dbbact',), **kwargs):
     gui_obj = create_plot_gui(exp, gui, databases)
     exp.heatmap(axis=gui_obj.axis, **kwargs)
     # set up the gui ready for interaction
