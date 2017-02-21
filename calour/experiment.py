@@ -237,7 +237,6 @@ class Experiment:
         '''Get the number of samples by features in the experiment. '''
         return self.get_data().shape
 
-    # @Experiment._convert_axis_name
     def reorder(self, new_order, axis=0, inplace=False):
         '''Reorder according to indices in the new order.
 

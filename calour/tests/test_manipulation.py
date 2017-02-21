@@ -30,7 +30,8 @@ class IOTests(Tests):
     def test_join_fields_complex(self):
         # test join feature fields with new field name, separator and inplace
         exp = deepcopy(self.test1)
-        exp.join_fields('taxonomy', 'taxonomy', newname='test', axis=1, separator=';', inplace=True)
+        newexp = exp.join_fields('taxonomy', 'taxonomy', newname='test', axis=1, separator=';', inplace=True)
+        self.assertIs(newexp, exp)
         self.assertIn('test', exp.feature_metadata.columns)
         self.assertNotIn('test', exp.sample_metadata.columns)
         self.assertEqual(exp.feature_metadata['test'].iloc[11], 'bad_bacteria;bad_bacteria')

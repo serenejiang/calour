@@ -113,7 +113,8 @@ def _get_md_from_biom(table):
         md_df = pd.DataFrame(index=ids)
     else:
         md_df = pd.DataFrame([dict(tmd) for tmd in metadata], index=ids)
-
+    # duplicate the index to a column so we can select it
+    md_df['id'] = ids
     return md_df
 
 
@@ -275,6 +276,8 @@ def read(data_file, sample_metadata_file=None, feature_metadata_file=None,
         exp_metadata['map_md5'] = get_file_md5(sample_metadata_file, encoding=encoding)
     else:
         sample_metadata = pd.DataFrame(index=sid)
+        sample_metadata['id'] = sample_metadata.index
+
     # load the feature metadata file
     if feature_metadata_file is not None:
         # reorder the feature id to align with that from biom table

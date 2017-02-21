@@ -117,8 +117,7 @@ class ExperimentTests(Tests):
         self.assertTrue(sparse.issparse(data))
         self.assertEqual(data.sum(), exp.data.sum())
         # test it's not a copy but inplace
-        data[0, 0] = -1000
-        self.assertEqual(data.sum(), exp.data.sum())
+        self.assertIs(data, exp.data)
 
     def test_get_data_copy(self):
         # lets force it to copy
@@ -126,9 +125,8 @@ class ExperimentTests(Tests):
         data = exp.get_data(copy=True)
         self.assertTrue(sparse.issparse(data))
         self.assertEqual(data.sum(), exp.data.sum())
-        # test it's not a copy but inplace
-        data[0, 0] = -1000
-        self.assertNotEqual(data.sum(), exp.data.sum())
+        # test it's a copy but inplace
+        self.assertIsNot(data, exp.data)
 
     def test_get_data_non_sparse(self):
         # force non-sparse, should copy
@@ -136,9 +134,8 @@ class ExperimentTests(Tests):
         data = exp.get_data(sparse=False)
         self.assertFalse(sparse.issparse(data))
         self.assertEqual(data.sum(), exp.data.sum())
-        # test it's not a copy but inplace
-        data[0, 0] = -1000
-        self.assertNotEqual(data.sum(), exp.data.sum())
+        # test it's a copy but inplace
+        self.assertIsNot(data, exp.data)
 
     def test_get_data_sparse(self):
         # force sparse, should not copy
@@ -147,8 +144,7 @@ class ExperimentTests(Tests):
         self.assertTrue(sparse.issparse(data))
         self.assertEqual(data.sum(), exp.data.sum())
         # test it's not a copy but inplace
-        data[0, 0] = -1000
-        self.assertEqual(data.sum(), exp.data.sum())
+        self.assertIs(data, exp.data)
 
     def test_get_data_sparse_copy(self):
         # force sparse on a non-sparse matrix
@@ -157,9 +153,8 @@ class ExperimentTests(Tests):
         data = exp.get_data(sparse=True)
         self.assertTrue(sparse.issparse(data))
         self.assertEqual(data.sum(), exp.data.sum())
-        # test it's not a copy but inplace
-        data[0, 0] = -1000
-        self.assertNotEqual(data.sum(), exp.data.sum())
+        # test it's a copy but inplace
+        self.assertIsNot(data, exp.data)
 
 if __name__ == "__main__":
     main()
