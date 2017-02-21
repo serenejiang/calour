@@ -71,9 +71,9 @@ def plot_s(exp, field=None, **kwargs):
     '''
     newexp = sort_samples(exp, field)
     if 'sample_field' in kwargs:
-        newexp.plot(feature_field='taxonomy', max_features=100, **kwargs)
+        newexp.plot(feature_field='taxonomy', **kwargs)
     else:
-        newexp.plot(field, feature_field='taxonomy', max_features=100, **kwargs)
+        newexp.plot(sample_field=field, feature_field='taxonomy', **kwargs)
 
 
 def filter_min_reads(exp, minreads, **kwargs):
