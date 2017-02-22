@@ -63,6 +63,10 @@ class PlotGUI_QT5(PlotGUI):
 
     def show_info(self):
         sid, fid, abd, annt = self.get_info()
+        self._update_info_labels(sid, fid, abd)
+        self._display_annotation_in_qlistwidget(annt)
+
+    def _update_info_labels(self, sid, fid, abd):
         self.app_window.w_abund.setText('{:.01f}'.format(abd))
         self.app_window.w_fid.setText(fid)
         self.app_window.w_sid.setText(sid)
@@ -72,8 +76,6 @@ class PlotGUI_QT5(PlotGUI):
         feature_field = str(self.app_window.w_ffield.currentText())
         self.app_window.w_ffield_val.setText(
             str(self.exp.feature_metadata[feature_field][self.current_select[1]]))
-
-        self._display_annotation_in_qlistwidget(annt)
 
     def _display_annotation_in_qlistwidget(self, annt):
         '''Add a line to the annotation list
@@ -244,6 +246,8 @@ class ApplicationWindow(QMainWindow):
         self.w_sequence.clicked.connect(self.copy_sequence)
         self.w_save_fasta.clicked.connect(self.save_fasta)
         self.w_enrichment.clicked.connect(self.enrichment)
+        self.w_sfield.currentIndexChanged.connect(self.info_field_changed)
+        self.w_ffield.currentIndexChanged.connect(self.info_field_changed)
 
         self.main_widget.setFocus()
         self.setCentralWidget(self.main_widget)
@@ -253,6 +257,10 @@ class ApplicationWindow(QMainWindow):
 
     def closeEvent(self, ce):
         self.fileQuit()
+
+    def info_field_changed(self):
+        sid, fid, abd = self.gui.get_selection_info()
+        self.gui._update_info_labels(sid, fid, abd)
 
     def copy_sequence(self):
         '''Copy the sequence to the clipboard
