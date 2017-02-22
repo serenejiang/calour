@@ -7,7 +7,6 @@
 # ----------------------------------------------------------------------------
 import numpy as np
 from logging import getLogger
-import skbio
 
 logger = getLogger(__name__)
 
