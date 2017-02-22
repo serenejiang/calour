@@ -273,7 +273,7 @@ class ApplicationWindow(QMainWindow):
 
         logger.debug('Getting experiment annotations for %d features' % len(allseqs))
         for cdb in self.gui.databases:
-            if not cdb.can_feature_terms():
+            if not cdb.can_get_feature_terms:
                 continue
             logger.debug('Database: %s' % cdb.get_name())
             feature_terms = cdb.get_feature_terms(allseqs, self.gui.exp)

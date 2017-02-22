@@ -102,7 +102,7 @@ def create_plot_gui(exp, gui='cli', databases=('dbbact',)):
         cdb = DBClass()
         gui_obj.databases.append(cdb)
         # select the database for use with the annotate button
-        if cdb.can_annotate():
+        if cdb.can_annotate:
             if gui_obj._annotation_db is None:
                 gui_obj._annotation_db = cdb
             else:
