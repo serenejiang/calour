@@ -9,7 +9,6 @@
 from unittest import main
 
 from skbio.util import get_data_path
-import pandas.util.testing as pdt
 
 from calour._testing import Tests, assert_experiment_equal
 import calour as ca
@@ -145,20 +144,6 @@ class FilteringTests(Tests):
                 self.assertIs(obs, self.test2)
             else:
                 self.assertIsNot(obs, self.test2)
-
-    def test_filter_taxonomy(self):
-        # default - substring and keep matching
-        exp = self.test1.filter_taxonomy('proteobacteria')
-        self.assertEqual(exp.shape[1], 2)
-        self.assertEqual(set(exp.feature_metadata.index), set(self.test1.feature_metadata.index[[2, 3]]))
-        # check we didn't change the samples
-        pdt.assert_frame_equal(exp.sample_metadata, self.test1.sample_metadata)
-
-        # test with list of values and negate
-        exp = self.test1.filter_taxonomy(['Firmicutes', 'proteobacteria'], negate=True)
-        self.assertEqual(exp.shape[1], 6)
-        self.assertNotIn(self.test1.feature_metadata.index[4], exp.feature_metadata.index)
-        self.assertIn(self.test1.feature_metadata.index[5], exp.feature_metadata.index)
 
 
 if __name__ == '__main__':

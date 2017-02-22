@@ -12,40 +12,6 @@ import skbio
 logger = getLogger(__name__)
 
 
-def filter_taxonomy(exp, taxonomy, exact=False, negate=False, **kwargs):
-    '''Filter keeping only specif taxonomies
-
-    Parameters
-    ----------
-    taxonomy : str or list of str
-        the taxonomies names to filter
-    exact : bool (optional)
-        False (default) to allow substring match, True to require full match
-    negate : bool (optional)
-        False (default) to return matching features, True to return non-matching features
-
-    Returns
-    -------
-    newexp : Experiment
-    '''
-    if 'taxonomy' not in exp.feature_metadata.columns:
-        raise ValueError('taxonomy field not initialzed. Did you load the data with calour.read_taxa() ?')
-    if not isinstance(taxonomy, (list, tuple)):
-        taxonomy = [taxonomy]
-
-    if exact:
-        newexp = exp.filter_by_metadata('taxonomy', taxonomy, axis=1, negate=negate, **kwargs)
-        return newexp
-
-    select = exp.feature_metadata['taxonomy'] is None
-    for ctax in taxonomy:
-        select = select | exp.feature_metadata['taxonomy'].str.contains(ctax, case=False)
-    if negate:
-        select = ~ select
-    newexp = exp.reorder(select.values, axis=1, **kwargs)
-    return newexp
-
-
 def cluster_features(exp, minreads=10, **kwargs):
     '''Cluster features following log transform and filtering of minimal reads
     '''
@@ -147,40 +113,6 @@ def filter_feature_ids(exp, ids, negate=False, inplace=False):
             pos = exp.feature_metadata.index.get_loc(cid)
             okpos.append(pos)
     logger.debug('loaded %d sequences. found %d sequences in experiment' % (tot_ids, len(okpos)))
-    if negate:
-        okpos = np.setdiff1d(np.arange(len(exp.feature_metadata.index)), okpos, assume_unique=True)
-
-    newexp = exp.reorder(okpos, axis=1, inplace=inplace)
-    return newexp
-
-
-def filter_fasta(exp, filename, negate=False, inplace=False):
-    '''Filter features from experiment based on fasta file
-
-    Parameters
-    ----------
-    filename : str
-        the fasta filename containing the sequences to use for filtering
-    negate : bool (optional)
-        False (default) to keep only sequences matching the fasta file, True to remove sequences in the fasta file.
-    inplace : bool (optional)
-        False (default) to create a copy of the experiment, True to filter inplace
-
-    Returns
-    -------
-    newexp : Experiment
-        filtered so contains only sequence present in exp and in the fasta file
-    '''
-    logger.debug('filter_fasta using file %s' % filename)
-    okpos = []
-    tot_seqs = 0
-    for cseq in skbio.read(filename, format='fasta'):
-        tot_seqs += 1
-        cseq = str(cseq).upper()
-        if cseq in exp.feature_metadata.index:
-            pos = exp.feature_metadata.index.get_loc(cseq)
-            okpos.append(pos)
-    logger.debug('loaded %d sequences. found %d sequences in experiment' % (tot_seqs, len(okpos)))
     if negate:
         okpos = np.setdiff1d(np.arange(len(exp.feature_metadata.index)), okpos, assume_unique=True)
 
