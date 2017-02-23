@@ -84,9 +84,8 @@ class PlotGUI(ABC):
 
         Returns
         -------
-        SampleID : str
-        FeatureID : str
-        abundance : numeric
+        tuple of (str, str, numeric)
+            sample id, feature id, abundance
         '''
         row, col = self.current_select
         fid = self.exp.feature_metadata.index[col]

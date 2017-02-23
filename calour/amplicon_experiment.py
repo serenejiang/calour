@@ -42,7 +42,7 @@ class AmpliconExperiment(Experiment):
 
         Returns
         -------
-        ``Experiment``
+        ``AmpliconExperiment``
             With only features with matching taxonomy
         '''
         if 'taxonomy' not in exp.feature_metadata.columns:
