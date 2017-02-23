@@ -12,6 +12,7 @@ import numpy as np
 import skbio
 
 from .experiment import Experiment
+from .util import _get_taxonomy_string
 
 
 logger = getLogger(__name__)
@@ -99,3 +100,25 @@ class AmpliconExperiment(Experiment):
 
         newexp = exp.reorder(okpos, axis=1, inplace=inplace)
         return newexp
+
+    @Experiment._record_sig
+    def sort_taxonomy(exp, inplace=False):
+        '''Sort the features based on the taxonomy
+
+        Sort features based on the taxonomy (alphabetical)
+
+        Parameters
+        ----------
+        inplace : bool (optional)
+            False (default) to create a copy
+            True to Replace data in exp
+        Returns
+        -------
+        exp : Experiment
+            sorted by taxonomy
+        '''
+        logger.debug('sorting by taxonomies')
+        taxonomy = _get_taxonomy_string(exp, remove_underscore=True)
+        sort_pos = np.argsort(taxonomy, kind='mergesort')
+        exp = exp.reorder(sort_pos, axis=1, inplace=inplace)
+        return exp

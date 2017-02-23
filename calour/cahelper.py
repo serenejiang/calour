@@ -15,17 +15,10 @@ def cluster_features(exp, minreads=10, **kwargs):
     '''Cluster features following log transform and filtering of minimal reads
     '''
     if minreads > 0:
-        newexp = filter_min_abundance(exp, minreads)
+        newexp = exp.filter_min_abundance(minreads)
     else:
         newexp = exp
     newexp = newexp.cluster_data(transform=log_and_scale, axis=0, **kwargs)
-    return newexp
-
-
-def sort_samples(exp, field, **kwargs):
-    '''Sort experiment by field
-    '''
-    newexp = exp.sort_by_metadata(field=field, **kwargs)
     return newexp
 
 
@@ -34,18 +27,11 @@ def plot_s(exp, field=None, **kwargs):
     use after load_taxa()
     note: if sample_field is in **kwargs, use it as labels after sorting using field
     '''
-    newexp = sort_samples(exp, field)
+    newexp = exp.sort_samples(field)
     if 'sample_field' in kwargs:
         newexp.plot(feature_field='taxonomy', **kwargs)
     else:
         newexp.plot(sample_field=field, feature_field='taxonomy', **kwargs)
-
-
-def filter_min_abundance(exp, minreads, **kwargs):
-    '''filter keeping only features with >= minreads total
-    '''
-    newexp = exp.filter_by_data('sum_abundance', axis=1, cutoff=minreads, **kwargs)
-    return newexp
 
 
 def filter_orig_reads(exp, minreads, **kwargs):

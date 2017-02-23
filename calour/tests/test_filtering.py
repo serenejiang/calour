@@ -145,6 +145,11 @@ class FilteringTests(Tests):
             else:
                 self.assertIsNot(obs, self.test2)
 
+    def test_filter_min_abundance(self):
+        exp = self.test1.test_filter_min_abundance(17008)
+        self.assertEqual(exp.shape[1], 3)
+        self.assertIn()
+
 
 if __name__ == '__main__':
     main()

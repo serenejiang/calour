@@ -8,10 +8,12 @@
 
 from unittest import main
 from copy import deepcopy
+from os.path import join
 
 import pandas.util.testing as pdt
 import numpy as np
 import numpy.testing as npt
+import pandas as pd
 
 from calour._testing import Tests
 import calour as ca
@@ -78,6 +80,12 @@ class ExperimentTests(Tests):
         npt.assert_array_equal(data[:, :], orig_data[:, okseqs])
         # and is inplace
         self.assertIs(exp, self.test1)
+
+    def test_sort_taxonomy(self):
+        obs = self.test1.sort_taxonomy()
+        expected_taxonomy = pd.Series.from_csv(join(self.test_data_dir, 'test1.sorted.taxonomy.csv'))
+        pdt.assert_series_equal(obs.feature_metadata['taxonomy'], expected_taxonomy, check_names=False)
+
 
 if __name__ == "__main__":
     main()

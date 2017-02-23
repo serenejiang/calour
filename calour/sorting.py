@@ -21,29 +21,6 @@ logger = getLogger(__name__)
 
 
 @Experiment._record_sig
-def sort_taxonomy(exp, inplace=False):
-    '''Sort the features based on the taxonomy
-
-    Sort features based on the taxonomy (alphabetical)
-
-    Parameters
-    ----------
-    inplace : bool (optional)
-        False (default) to create a copy
-        True to Replace data in exp
-    Returns
-    -------
-    exp : Experiment
-        sorted by taxonomy
-    '''
-    logger.debug('sorting by taxonomies')
-    taxonomy = _get_taxonomy_string(exp, remove_underscore=True)
-    sort_pos = np.argsort(taxonomy, kind='mergesort')
-    exp = exp.reorder(sort_pos, axis=1, inplace=inplace)
-    return exp
-
-
-@Experiment._record_sig
 def sort_center_mass(exp, transform=log_n, inplace=False, **kwargs):
     '''Sort the features based on the center of mass
 
@@ -279,3 +256,20 @@ def sort_niche(exp, field):
     '''
     sort by niches - jamie
     '''
+
+
+def sort_samples(exp, field, **kwargs):
+    '''Sort samples by field
+    A convenience function for sort_by_metadata
+
+    Parameters
+    ----------
+    field : str
+        The field to sort the samples by
+
+    Returns
+    -------
+    ``Experiment`` with samples sorted according to values in field
+    '''
+    newexp = exp.sort_by_metadata(field=field, **kwargs)
+    return newexp

@@ -251,3 +251,16 @@ def filter_samples(exp, field, values, negate=False, inplace=False):
     '''Shortcut for filtering samples.'''
     return filter_by_metadata(exp, field=field, pick=values,
                               negate=negate, inplace=inplace)
+
+
+def filter_min_abundance(exp, min_abundance, **kwargs):
+    '''Filter keeping only features with >= min_abundance total over all samples
+    This is a convenience function wrapping filter_by_data
+
+    Parameters
+    ----------
+    min_abundance : numeric
+        The minimal total abundance for each feature over all samples
+    '''
+    newexp = exp.filter_by_data('sum_abundance', axis=1, cutoff=min_abundance, **kwargs)
+    return newexp
