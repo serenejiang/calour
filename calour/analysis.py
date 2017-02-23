@@ -161,6 +161,17 @@ def relative_enrichment(exp, features, feature_terms):
             the feature (out of exp) to which the terms relate
         feature_terms (value) : list of str or int
             the terms associated with this feature
+
+    Returns
+    -------
+    list of dict
+        info about significantly enriched terms. one item per term, keys are:
+        'pval' : the p-value for the enrichment (float)
+        'observed' : the number of observations of this term in group1 (int)
+        'expected' : the expected (based on all features) number of observations of this term in group1 (float)
+        'group1' : fraction of total terms in group 1 which are the specific term (float)
+        'group2' : fraction of total terms in group 2 which are the specific term (float)
+        'description' : the term (str)
     '''
     all_features = set(exp.feature_metadata.index.values)
     bg_features = list(all_features.difference(features))

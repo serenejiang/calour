@@ -168,7 +168,7 @@ def is_sample_v4(exp, region_seq='TACG', frac_have=0.4, min_reads=10):
         List of samples which don't have at least frac_have of sequences matching region_seq
     '''
 
-    newexp = filter_min_reads(exp, min_reads)
+    newexp = filter_min_abundance(exp, min_reads)
     seqs_ok = newexp.feature_metadata.index.str.startswith(region_seq)
     num_seqs_ok = np.sum(newexp.data[:, seqs_ok] > 0, axis=1)
     num_seqs = np.sum(newexp.data > 0, axis=1)
