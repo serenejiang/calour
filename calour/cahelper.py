@@ -15,7 +15,7 @@ def cluster_features(exp, minreads=10, **kwargs):
     '''Cluster features following log transform and filtering of minimal reads
     '''
     if minreads > 0:
-        newexp = filter_min_reads(exp, minreads)
+        newexp = filter_min_abundance(exp, minreads)
     else:
         newexp = exp
     newexp = newexp.cluster_data(transform=log_and_scale, axis=0, **kwargs)
@@ -41,7 +41,7 @@ def plot_s(exp, field=None, **kwargs):
         newexp.plot(sample_field=field, feature_field='taxonomy', **kwargs)
 
 
-def filter_min_reads(exp, minreads, **kwargs):
+def filter_min_abundance(exp, minreads, **kwargs):
     '''filter keeping only features with >= minreads total
     '''
     newexp = exp.filter_by_data('sum_abundance', axis=1, cutoff=minreads, **kwargs)
