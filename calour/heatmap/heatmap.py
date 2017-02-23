@@ -92,9 +92,6 @@ def create_plot_gui(exp, gui='cli', databases=('dbbact',)):
         elif cdatabase == 'spongeworld':
             db_name = 'DBSponge'
             db_module_name = 'dbbact_calour.dbsponge'
-        elif cdatabase == 'mock_database':
-            db_name = 'MockDatabase'
-            db_module_name = 'calour.mock_database'
         else:
             raise ValueError('Unknown Database specified: %r' % cdatabase)
 
