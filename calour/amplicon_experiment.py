@@ -122,3 +122,28 @@ class AmpliconExperiment(Experiment):
         sort_pos = np.argsort(taxonomy, kind='mergesort')
         exp = exp.reorder(sort_pos, axis=1, inplace=inplace)
         return exp
+
+    @Experiment._record_sig
+    def filter_orig_reads(exp, minreads, **kwargs):
+        '''Filter keeping only samples with >= minreads in the original reads column
+        Note this function uses the _calour_original_abundance field rather than the current sum of sequences per sample.
+        So if you start with a sample with 100 reads, normalizing and filtering with other functions with not change the original reads column
+        (which will remain 100).
+        If you want to filter based on current total reads, use ``filter_by_data()`` instead
+
+        Parameters
+        ----------
+        minreads : numeric
+            Keep only samples with >= minreads reads (when loaded - not affected by normalization)
+
+        Returns
+        -------
+        ``AmpliconExperiment`` - with only samples with enough original reads
+        '''
+        origread_field = '_calour_original_abundance'
+        if origread_field not in exp.sample_metadata.columns:
+            raise ValueError('%s field not initialzed. Did you load the data with calour.read_taxa() ?' % origread_field)
+
+        good_pos = (exp.sample_metadata[origread_field] >= minreads).values
+        newexp = exp.reorder(good_pos, axis=0, **kwargs)
+        return newexp

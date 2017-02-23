@@ -255,7 +255,7 @@ def filter_samples(exp, field, values, negate=False, inplace=False):
 
 def filter_min_abundance(exp, min_abundance, **kwargs):
     '''Filter keeping only features with >= min_abundance total over all samples
-    This is a convenience function wrapping filter_by_data
+    This is a convenience function wrapping filter_by_data()
 
     Parameters
     ----------
@@ -263,4 +263,23 @@ def filter_min_abundance(exp, min_abundance, **kwargs):
         The minimal total abundance for each feature over all samples
     '''
     newexp = exp.filter_by_data('sum_abundance', axis=1, cutoff=min_abundance, **kwargs)
+    return newexp
+
+
+def filter_prevalence(exp, fraction=0.5, cutoff=1/10000, **kwargs):
+    '''Filter features keeping only ones present in at least fraction fraction of the samples.
+    This is a convenience function wrapping filter_by_data()
+
+    Parameters
+    ----------
+    fraction : float (optional)
+        Keep features present at least in fraction of samples
+    cutoff : float (optional)
+        The minimal fraction of reads for the otu to be called present in a sample
+
+    Returns
+    -------
+    ``Experiment`` with only features present in at least fraction of samples
+    '''
+    newexp = exp.filter_by_data('prevalence', axis=1, fraction=fraction, cutoff=cutoff, **kwargs)
     return newexp

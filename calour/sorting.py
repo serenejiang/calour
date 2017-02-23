@@ -14,7 +14,6 @@ from scipy import cluster, spatial
 
 from . import Experiment
 from .transforming import log_n
-from .util import _get_taxonomy_string
 
 
 logger = getLogger(__name__)
@@ -161,6 +160,7 @@ def sort_by_data(exp, axis=0, subset=None, key='log_mean', inplace=False, **kwar
         Alternatively it accepts the following str values:
         "log_mean": sort by log of the mean
         "prevalence": sort by the prevalence
+        "mean": sort by the mean
     inplace : bool (optional)
         False (default) to create a copy
         True to Replace data in exp
@@ -181,7 +181,8 @@ def sort_by_data(exp, axis=0, subset=None, key='log_mean', inplace=False, **kwar
         else:
             data_subset = exp.data[subset, :]
     func = {'log_mean': _log_mean,
-            'prevalence': _prevalence}
+            'prevalence': _prevalence,
+            'mean': np.mean}
     if isinstance(key, str):
         key = func[key]
     if exp.sparse:
@@ -272,4 +273,33 @@ def sort_samples(exp, field, **kwargs):
     ``Experiment`` with samples sorted according to values in field
     '''
     newexp = exp.sort_by_metadata(field=field, **kwargs)
+    return newexp
+
+
+def sort_freq(exp, field=None, value=None, inplace=False, **kwargs):
+    '''Sort features based on their abundance in a subset of the samples.
+    This is a convenience wrapper for sort_by_data()
+
+    Parameters
+    ----------
+    field : str or None (default)
+        None (default) to sort on all samples, str to sort only on samples matching the field/value combination
+    value : str or list of str or None (default)
+        if field is not None, value is the value/list of values so sorting is only on samples matching this list
+    inplace : bool (optional)
+        False (default) to create a copy of the experiment, True to filter inplace
+
+    Returns
+    -------
+    ``Experiment``
+        with features sorted by abundance
+    '''
+    if field is None:
+        subset = None
+    else:
+        if not isinstance(value, (list, tuple)):
+            value = [value]
+        subset = np.where(exp.sample_metadata[field].isin(value).values)[0]
+
+    newexp = exp.sort_by_data(axis=1, subset=subset, inplace=inplace, **kwargs)
     return newexp

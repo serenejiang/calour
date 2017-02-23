@@ -34,36 +34,6 @@ def plot_s(exp, field=None, **kwargs):
         newexp.plot(sample_field=field, feature_field='taxonomy', **kwargs)
 
 
-def filter_orig_reads(exp, minreads, **kwargs):
-    ''' filter keeping only samples with >= minreads
-    '''
-    origread_field = '_calour_original_abundance'
-    if origread_field not in exp.sample_metadata.columns:
-        raise ValueError('%s field not initialzed. Did you load the data with calour.read_taxa() ?' % origread_field)
-
-    good_pos = (exp.sample_metadata[origread_field] >= minreads).values
-    newexp = exp.reorder(good_pos, axis=0, **kwargs)
-    return newexp
-
-
-def filter_prevalence(exp, fraction=0.5, cutoff=1/10000, **kwargs):
-    ''' filter sequences present in at least fraction fraction of the samples.
-
-    Parameters
-    ----------
-    fraction : float (optional)
-        Keep features present at least in fraction of samples
-    cutoff : float (optional)
-        The minimal fraction of reads for the otu to be called present in a sample
-
-    Returns
-    -------
-    ``Experiment`` with only features present in at least fraction of samples
-    '''
-    newexp = exp.filter_by_data('prevalence', axis=1, fraction=fraction, cutoff=cutoff, **kwargs)
-    return newexp
-
-
 def filter_mean(exp, cutoff=0.01, **kwargs):
     ''' filter sequences with a mean at least cutoff
     '''
@@ -105,34 +75,6 @@ def filter_feature_ids(exp, ids, negate=False, inplace=False):
     return newexp
 
 
-def sort_freq(exp, field=None, value=None, inplace=False):
-    '''Sort features based on their abundance in a subset of the samples
-
-    Parameters
-    ----------
-    field : str or None (default)
-        None (default) to sort on all samples, str to sort only on samples matching the field/value combination
-    value : str or list of str or None (default)
-        if field is not None, value is the value/list of values so sorting is only on samples matching this list
-    inplace : bool (optional)
-        False (default) to create a copy of the experiment, True to filter inplace
-
-    Returns
-    -------
-    newexp : Experiment
-        with features sorted by abindance
-    '''
-    if field is None:
-        subset = None
-    else:
-        if not isinstance(value, (list, tuple)):
-            value = [value]
-        subset = np.where(exp.sample_metadata[field].isin(value).values)[0]
-
-    newexp = exp.sort_by_data(axis=1, subset=subset, inplace=inplace)
-    return newexp
-
-
 def is_sample_v4(exp, region_seq='TACG', frac_have=0.4, min_reads=10):
     '''Test which samples in the experiment are not from the region.
     Based on the consensus sequence at the beginning of the region.
@@ -154,7 +96,7 @@ def is_sample_v4(exp, region_seq='TACG', frac_have=0.4, min_reads=10):
         List of samples which don't have at least frac_have of sequences matching region_seq
     '''
 
-    newexp = filter_min_abundance(exp, min_reads)
+    newexp = exp.filter_min_abundance(min_reads)
     seqs_ok = newexp.feature_metadata.index.str.startswith(region_seq)
     num_seqs_ok = np.sum(newexp.data[:, seqs_ok] > 0, axis=1)
     num_seqs = np.sum(newexp.data > 0, axis=1)

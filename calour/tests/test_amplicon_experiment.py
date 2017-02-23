@@ -86,6 +86,13 @@ class ExperimentTests(Tests):
         expected_taxonomy = pd.Series.from_csv(join(self.test_data_dir, 'test1.sorted.taxonomy.csv'))
         pdt.assert_series_equal(obs.feature_metadata['taxonomy'], expected_taxonomy, check_names=False)
 
+    def test_filter_orig_reads(self):
+        obs = self.test1.filter_orig_reads(2900)
+        self.assertEqual(obs.shape[0], 2)
+        self.assertIn('S19', obs.sample_metadata.index)
+        self.assertIn('S20', obs.sample_metadata.index)
+        self.assertEqual(obs.shape[1], self.test1.shape[1])
+
 
 if __name__ == "__main__":
     main()
