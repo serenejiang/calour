@@ -276,7 +276,7 @@ class ApplicationWindow(QMainWindow):
             menu_delete = self.listMenu.addAction("Delete annotation")
             menu_delete.triggered.connect(lambda: self.right_menu_delete(item))
             menu_remove = self.listMenu.addAction("Remove seq. from annotation")
-            menu_remove.triggered.connect(lambda: self.right_menu_remove_seq(item))
+            menu_remove.triggered.connect(lambda: self.right_menu_remove_feature(item))
         self.listMenu.move(parent_position + QPos)
         self.listMenu.show()
 
@@ -287,12 +287,25 @@ class ApplicationWindow(QMainWindow):
         if QtWidgets.QMessageBox.warning(self, "Delete annotation?", "Are you sure you want to delete the annotation:\n%s?" % item.text(),
                                          QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No) == QtWidgets.QMessageBox.No:
             return
+        data = item.data(QtCore.Qt.UserRole)
+        db = data.get('_db_interface', None)
+        logger.debug('Deleting annotation %s' % item.text())
+        err = db.delete_annotation(data)
+        if err:
+            logger.error('Annotation not deleted. Error: %s' % err)
 
-    def right_menu_remove_seq(self, item):
-        if QtWidgets.QMessageBox.warning(self, "Remove sequence from annotation?", "Are you sure you want to remove the %d selected sequences\n"
-                                         "from the annotation:\n%s?" % (len(self.gui.get_selected_seqs()), item.text()), QtWidgets.QMessageBox.Yes,
+    def right_menu_remove_feature(self, item):
+        features = self.gui.get_selected_seqs()
+        if QtWidgets.QMessageBox.warning(self, "Remove feature from annotation?", "Are you sure you want to remove the %d selected features\n"
+                                         "from the annotation:\n%s?" % (len(features), item.text()), QtWidgets.QMessageBox.Yes,
                                          QtWidgets.QMessageBox.No) == QtWidgets.QMessageBox.No:
             return
+        data = item.data(QtCore.Qt.UserRole)
+        db = data.get('_db_interface', None)
+        logger.debug('Removing %d features from annotation %s' % (features, item.text()))
+        err = db.remove_features_from_annotation(features, data)
+        if err:
+            logger.error('Features not removed from annotation. Error: %s' % err)
 
     def info_field_changed(self):
         sid, fid, abd = self.gui.get_selection_info()
