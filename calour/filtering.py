@@ -283,3 +283,23 @@ def filter_prevalence(exp, fraction=0.5, cutoff=1/10000, **kwargs):
     '''
     newexp = exp.filter_by_data('prevalence', axis=1, fraction=fraction, cutoff=cutoff, **kwargs)
     return newexp
+
+
+def filter_mean(exp, cutoff=0.01, **kwargs):
+    '''Filter features with a mean at least cutoff of the mean total abundance/sample
+
+    In order to keep features with mean abundance of 1%, use ``filter_mean(cutoff=0.01)``
+
+    Parameters
+    ----------
+    cutoff : float (optional)
+        The minimal mean abundance fraction (out of the mean of total abundance per sample) for a feature in order
+        to keep it. Default is 0.01 - keep features with mean abundance >=1% of mean total abundance per sample
+
+    Returns
+    -------
+    ``Experiment``
+    '''
+    factor = np.mean(exp.data.sum(axis=1))
+    newexp = exp.filter_by_data('mean_abundance', axis=1, cutoff=cutoff * factor, **kwargs)
+    return newexp

@@ -11,17 +11,6 @@ from logging import getLogger
 logger = getLogger(__name__)
 
 
-def cluster_features(exp, minreads=10, **kwargs):
-    '''Cluster features following log transform and filtering of minimal reads
-    '''
-    if minreads > 0:
-        newexp = exp.filter_min_abundance(minreads)
-    else:
-        newexp = exp
-    newexp = newexp.cluster_data(transform=log_and_scale, axis=0, **kwargs)
-    return newexp
-
-
 def plot_s(exp, field=None, **kwargs):
     '''Plot bacteria (with taxonomy) after sorting by field
     use after load_taxa()
@@ -32,14 +21,6 @@ def plot_s(exp, field=None, **kwargs):
         newexp.plot(feature_field='taxonomy', **kwargs)
     else:
         newexp.plot(sample_field=field, feature_field='taxonomy', **kwargs)
-
-
-def filter_mean(exp, cutoff=0.01, **kwargs):
-    ''' filter sequences with a mean at least cutoff
-    '''
-    factor = np.mean(exp.data.sum(axis=1))
-    newexp = exp.filter_by_data('mean_abundance', axis=1, cutoff=cutoff * factor, **kwargs)
-    return newexp
 
 
 def filter_feature_ids(exp, ids, negate=False, inplace=False):
@@ -117,9 +98,3 @@ def set_log_level(level):
 
     clog = getLogger('calour')
     clog.setLevel(level)
-
-
-def log_and_scale(exp):
-    exp.log_n(inplace=True)
-    exp.scale(inplace=True, axis=0)
-    return exp
