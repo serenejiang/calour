@@ -261,3 +261,23 @@ def plot(exp, gui='cli', databases=('dbbact',), **kwargs):
     exp.heatmap(axis=gui_obj.axis, **kwargs)
     # set up the gui ready for interaction
     gui_obj()
+
+
+def plot_s(exp, field=None, **kwargs):
+    '''Plot bacteria after sorting by field
+    This is a convenience wrapper for plot()
+    Note: if sample_field is in **kwargs, use it as labels after sorting using field
+
+    Parameters
+    ----------
+    field : str or None (optional)
+        The field to sort samples by before plotting
+    '''
+    if field is not None:
+        newexp = exp.sort_samples(field)
+    else:
+        newexp = exp
+    if 'sample_field' in kwargs:
+        newexp.plot(**kwargs)
+    else:
+        newexp.plot(sample_field=field, **kwargs)

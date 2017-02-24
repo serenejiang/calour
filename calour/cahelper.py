@@ -11,18 +11,6 @@ from logging import getLogger
 logger = getLogger(__name__)
 
 
-def plot_s(exp, field=None, **kwargs):
-    '''Plot bacteria (with taxonomy) after sorting by field
-    use after load_taxa()
-    note: if sample_field is in **kwargs, use it as labels after sorting using field
-    '''
-    newexp = exp.sort_samples(field)
-    if 'sample_field' in kwargs:
-        newexp.plot(feature_field='taxonomy', **kwargs)
-    else:
-        newexp.plot(sample_field=field, feature_field='taxonomy', **kwargs)
-
-
 def filter_feature_ids(exp, ids, negate=False, inplace=False):
     '''Filter features based on a list of feature ids (index values)
 

@@ -19,6 +19,11 @@ logger = getLogger(__name__)
 
 
 class AmpliconExperiment(Experiment):
+    def __repr__(self):
+        '''Return a string representation of this object.'''
+        return 'AmpliconExperiment %s with %d samples, %d features' % (
+            self.description, self.data.shape[0], self.data.shape[1])
+
     def plot(self, databases=('dbbact',), feature_field='taxonomy', **kwargs):
         # plot the experiment using taxonmy field and dbbact database
         super().plot(feature_field=feature_field, databases=databases, **kwargs)
@@ -147,3 +152,22 @@ class AmpliconExperiment(Experiment):
         good_pos = (exp.sample_metadata[origread_field] >= minreads).values
         newexp = exp.reorder(good_pos, axis=0, **kwargs)
         return newexp
+
+    def plot_s(exp, field=None, **kwargs):
+        '''Plot bacteria after sorting by field
+        This is a convenience wrapper for plot()
+        Note: if sample_field is in **kwargs, use it as labels after sorting using field
+
+        Parameters
+        ----------
+        field : str or None (optional)
+            The field to sort samples by before plotting
+        '''
+        if field is not None:
+            newexp = exp.sort_samples(field)
+        else:
+            newexp = exp
+        if 'sample_field' in kwargs:
+            newexp.plot(feature_field='taxonomy', **kwargs)
+        else:
+            newexp.plot(sample_field=field, feature_field='taxonomy', **kwargs)
