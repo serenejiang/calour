@@ -284,7 +284,8 @@ class ApplicationWindow(QMainWindow):
         self.double_click_annotation(item)
 
     def right_menu_delete(self, item):
-        if QtWidgets.QMessageBox.warning(self, "Delete annotation?", "Are you sure you want to delete the annotation:\n%s?" % item.text(),
+        if QtWidgets.QMessageBox.warning(self, "Delete annotation?", "Are you sure you want to delete the annotation:\n%s\n"
+                                         "and all associated features?" % item.text(),
                                          QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No) == QtWidgets.QMessageBox.No:
             return
         data = item.data(QtCore.Qt.UserRole)
@@ -293,6 +294,7 @@ class ApplicationWindow(QMainWindow):
         err = db.delete_annotation(data)
         if err:
             logger.error('Annotation not deleted. Error: %s' % err)
+        self.gui.show_info()
 
     def right_menu_remove_feature(self, item):
         features = self.gui.get_selected_seqs()
@@ -373,7 +375,11 @@ class ApplicationWindow(QMainWindow):
         # get the sequences of the selection
         seqs = self.gui.get_selected_seqs()
         # annotate
-        self.gui._annotation_db.add_annotation(seqs, self.gui.exp)
+        err = self.gui._annotation_db.add_annotation(seqs, self.gui.exp)
+        if err:
+            logger.error('Error encountered when adding annotaion: %s' % err)
+            return
+        logger.info('Annotation added')
 
 
 class SListWindow(QtWidgets.QDialog):
