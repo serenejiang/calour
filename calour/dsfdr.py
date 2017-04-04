@@ -6,7 +6,6 @@ from logging import getLogger
 import types
 import numpy as np
 import scipy as sp
-import scipy.stats
 from statsmodels.sandbox.stats.multicomp import multipletests
 from scipy.special import comb
 
